@@ -1,0 +1,10 @@
+[package]
+name = "email-encoding"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+base64 = "0.13"
+
+[dev-dependencies]
+pretty_assertions = "0.7"
