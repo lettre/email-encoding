@@ -1,6 +1,6 @@
 mod hex;
 mod hex_encoding;
-mod rfc1522;
+mod rfc2047;
 mod rfc2231;
 mod utils;
 
