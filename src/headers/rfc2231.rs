@@ -61,17 +61,13 @@ pub(super) fn encode(
     let mut entered_encoding = false;
     loop {
         write!(w, " {}*{}*=", key, i)?;
-        *line_len += key.len() + "*12*=".len();
+        *line_len += " ".len() + key.len() + "*12*=".len();
 
         let remaining_len = MAX_LINE_LEN - *line_len - "\r\n".len();
-        let mut value_ = utils::truncate_to_char_boundary(value, remaining_len.min(value.len()));
+        let value_ = utils::truncate_to_char_boundary(value, remaining_len.min(value.len()));
 
         if utils::str_is_ascii_alphanumeric_plus(value) {
             // No need for encoding
-
-            if value_.len() >= remaining_len {
-                value_ = utils::truncate_to_char_boundary(value_, value_.len() - 1);
-            }
 
             w.write_str(value_)?;
             *line_len += value_.len();
@@ -220,8 +216,8 @@ mod tests {
                 " filename*0*=utf-8''testing-to-see-what-happens-when-%F0%9F%93%95;\r\n",
                 " filename*1*=%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95;\r\n",
                 " filename*2*=%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95;\r\n",
-                " filename*3*=%F0%9F%93%95%F0%9F%93%95-are-placed-on-the-bound;\r\n",
-                " filename*4*=ary.txt"
+                " filename*3*=%F0%9F%93%95%F0%9F%93%95-are-placed-on-the-boun;\r\n",
+                " filename*4*=dary.txt"
             )
         );
     }
