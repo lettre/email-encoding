@@ -1,4 +1,5 @@
 use std::fmt::{self, Write};
+use std::mem;
 
 use super::{hex_encoding, utils, MAX_LINE_LEN};
 
@@ -57,6 +58,7 @@ pub(super) fn encode(
     *line_len = 0;
 
     let mut i = 0_usize;
+    let mut entered_encoding = false;
     loop {
         write!(w, " {}*{}*=", key, i)?;
         *line_len += key.len() + "*12*=".len();
@@ -78,8 +80,10 @@ pub(super) fn encode(
         } else {
             // Encode
 
-            w.write_str("utf-8''")?;
-            *line_len += "utf-8''".len();
+            if !mem::replace(&mut entered_encoding, true) {
+                w.write_str("utf-8''")?;
+                *line_len += "utf-8''".len();
+            }
 
             while *line_len < MAX_LINE_LEN - "=xx=xx=xx=xx;\r\n".len() {
                 match value.chars().next() {
@@ -214,10 +218,10 @@ mod tests {
             concat!(
                 "Content-Disposition: attachment;\r\n",
                 " filename*0*=utf-8''testing-to-see-what-happens-when-%F0%9F%93%95;\r\n",
-                " filename*1*=utf-8''%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95;\r\n",
-                " filename*2*=utf-8''%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95;\r\n",
-                " filename*3*=utf-8''%F0%9F%93%95%F0%9F%93%95-are-placed-on-th;\r\n",
-                " filename*4*=e-boundary.txt"
+                " filename*1*=%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95;\r\n",
+                " filename*2*=%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95;\r\n",
+                " filename*3*=%F0%9F%93%95%F0%9F%93%95-are-placed-on-the-bound;\r\n",
+                " filename*4*=ary.txt"
             )
         );
     }
