@@ -7,4 +7,4 @@ edition = "2021"
 base64 = { version = "0.13", default-features = false }
 
 [dev-dependencies]
-pretty_assertions = "0.7"
+pretty_assertions = "1"
