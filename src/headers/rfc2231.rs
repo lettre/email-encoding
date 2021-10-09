@@ -21,20 +21,6 @@ pub(super) fn encode(
     let plain_combined_len = key.len() + "=".len() + value.len() + "\r\n".len();
     let quoted_plain_combined_len = key.len() + "=\"".len() + value.len() + "\"\r\n".len();
     if *line_len + plain_combined_len <= MAX_LINE_LEN {
-        if !value.is_empty() && utils::str_is_ascii_alphanumeric_plus(value) {
-            // Fits line an can be plainly encoded
-
-            w.write_str(key)?;
-
-            w.write_char('=')?;
-
-            w.write_str(value)?;
-
-            *line_len += plain_combined_len;
-
-            return Ok(());
-        }
-
         if utils::str_is_ascii_printable(value)
             && *line_len + quoted_plain_combined_len <= MAX_LINE_LEN
         {
@@ -137,7 +123,7 @@ mod tests {
 
         assert_eq!(
             s,
-            concat!("Content-Disposition: attachment;\r\n", " filename=duck.txt")
+            concat!("Content-Disposition: attachment;\r\n", " filename=\"duck.txt\"")
         );
     }
 
