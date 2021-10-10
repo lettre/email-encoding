@@ -3,7 +3,7 @@ use std::mem;
 
 use super::{hex_encoding, utils, MAX_LINE_LEN};
 
-pub(super) fn encode(
+pub fn encode(
     key: &str,
     mut value: &str,
     w: &mut dyn Write,
