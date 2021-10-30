@@ -1,3 +1,5 @@
+pub use self::utils::EmailWriter;
+
 mod hex;
 mod hex_encoding;
 mod rfc2047;
