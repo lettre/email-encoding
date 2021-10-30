@@ -36,7 +36,7 @@ impl<'a> EmailWriter<'a> {
         Ok(())
     }
 
-    pub(crate) fn space(&mut self) {
+    pub fn space(&mut self) {
         debug_assert!(!self.write_space_on_next_write);
         self.write_space_on_next_write = true;
     }
