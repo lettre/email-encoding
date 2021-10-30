@@ -3,12 +3,7 @@ use std::mem;
 
 use super::{hex_encoding, utils, MAX_LINE_LEN};
 
-pub fn encode(
-    key: &str,
-    mut value: &str,
-    w: &mut dyn Write,
-    line_len: &mut usize,
-) -> fmt::Result {
+pub fn encode(key: &str, mut value: &str, w: &mut dyn Write, line_len: &mut usize) -> fmt::Result {
     assert!(
         utils::str_is_ascii_alphanumeric(key),
         "`key` must only be composed of ascii alphanumeric chars"
@@ -18,26 +13,22 @@ pub fn encode(
         "`key` must not be too long to cause the encoder to overflow the max line length"
     );
 
-    let plain_combined_len = key.len() + "=".len() + value.len() + "\r\n".len();
     let quoted_plain_combined_len = key.len() + "=\"".len() + value.len() + "\"\r\n".len();
-    if *line_len + plain_combined_len <= MAX_LINE_LEN {
-        if utils::str_is_ascii_printable(value)
-            && *line_len + quoted_plain_combined_len <= MAX_LINE_LEN
-        {
-            // Fits line an can be escaped and put into double quotes
+    if utils::str_is_ascii_printable(value) && *line_len + quoted_plain_combined_len <= MAX_LINE_LEN
+    {
+        // Fits line an can be escaped and put into double quotes
 
-            w.write_str(key)?;
+        w.write_str(key)?;
 
-            w.write_char('=')?;
+        w.write_char('=')?;
 
-            w.write_char('"')?;
-            utils::write_escaped(value, w, line_len)?;
-            w.write_char('"')?;
+        w.write_char('"')?;
+        utils::write_escaped(value, w, line_len)?;
+        w.write_char('"')?;
 
-            *line_len += key.len() + "=\"".len() + "\"".len();
+        *line_len += key.len() + "=\"".len() + "\"".len();
 
-            return Ok(());
-        }
+        return Ok(());
     }
 
     w.write_str("\r\n")?;
@@ -123,7 +114,10 @@ mod tests {
 
         assert_eq!(
             s,
-            concat!("Content-Disposition: attachment;\r\n", " filename=\"duck.txt\"")
+            concat!(
+                "Content-Disposition: attachment;\r\n",
+                " filename=\"duck.txt\""
+            )
         );
     }
 
