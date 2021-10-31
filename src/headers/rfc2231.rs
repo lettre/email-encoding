@@ -53,11 +53,12 @@ pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter) -> fmt::Result {
                 w.write_str("utf-8''")?;
             }
 
+            let mut chars = value.chars();
             while w.line_len() < MAX_LINE_LEN - "=xx=xx=xx=xx;\r\n".len() {
-                match value.chars().next() {
+                match chars.next() {
                     Some(c) => {
                         hex_encoding::percent_encode_char(w, c)?;
-                        value = &value[c.len_utf8()..];
+                        value = chars.as_str();
                     }
                     None => {
                         break;
