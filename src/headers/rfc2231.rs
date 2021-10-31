@@ -201,4 +201,30 @@ mod tests {
             )
         );
     }
+
+    #[test]
+    fn parameter_special_long_part2() {
+        let mut s = "Content-Disposition: attachment;".to_string();
+        let line_len = s.len();
+
+        let mut w = EmailWriter::new(&mut s, line_len, false);
+        encode(
+            "filename",
+            "testing-to-see-what-happens-when-books-are-placed-in-the-second-part-📕📕📕📕📕📕📕📕📕📕📕.txt",
+            &mut w,
+        )
+        .unwrap();
+
+        assert_eq!(
+            s,
+            concat!(
+                "Content-Disposition: attachment;\r\n",
+                " filename*0*=utf-8''testing-to-see-what-happens-when-books-ar;\r\n",
+                " filename*1*=e-placed-in-the-second-part-%F0%9F%93%95%F0%9F%93%95;\r\n",
+                " filename*2*=%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95;\r\n",
+                " filename*3*=%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95%F0%9F%93%95;\r\n",
+                " filename*4*=%F0%9F%93%95.txt"
+            )
+        );
+    }
 }
