@@ -90,49 +90,40 @@ mod tests {
 
     #[test]
     fn empty() {
-        let mut s = "Content-Disposition: attachment;\r\n ".to_string();
+        let mut s = "Content-Disposition: attachment;".to_string();
         let line_len = 1;
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
+        let mut w = EmailWriter::new(&mut s, line_len, true);
         encode("filename", "", &mut w).unwrap();
 
-        assert_eq!(
-            s,
-            concat!("Content-Disposition: attachment;\r\n", " filename=\"\"")
-        );
+        assert_eq!(s, concat!("Content-Disposition: attachment; filename=\"\""));
     }
 
     #[test]
     fn parameter() {
-        let mut s = "Content-Disposition: attachment;\r\n ".to_string();
+        let mut s = "Content-Disposition: attachment;".to_string();
         let line_len = 1;
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
+        let mut w = EmailWriter::new(&mut s, line_len, true);
         encode("filename", "duck.txt", &mut w).unwrap();
 
         assert_eq!(
             s,
-            concat!(
-                "Content-Disposition: attachment;\r\n",
-                " filename=\"duck.txt\""
-            )
+            concat!("Content-Disposition: attachment; filename=\"duck.txt\"")
         );
     }
 
     #[test]
     fn parameter_to_escape() {
-        let mut s = "Content-Disposition: attachment;\r\n ".to_string();
+        let mut s = "Content-Disposition: attachment;".to_string();
         let line_len = 1;
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
+        let mut w = EmailWriter::new(&mut s, line_len, true);
         encode("filename", "du\"ck\\.txt", &mut w).unwrap();
 
         assert_eq!(
             s,
-            concat!(
-                "Content-Disposition: attachment;\r\n",
-                " filename=\"du\\\"ck\\\\.txt\""
-            )
+            concat!("Content-Disposition: attachment; filename=\"du\\\"ck\\\\.txt\"")
         );
     }
 
@@ -141,7 +132,7 @@ mod tests {
         let mut s = "Content-Disposition: attachment;".to_string();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
+        let mut w = EmailWriter::new(&mut s, line_len, true);
         encode(
             "filename",
             "a-fairly-long-filename-just-to-see-what-happens-when-we-encode-it-will-the-client-be-able-to-handle-it.txt",
@@ -164,7 +155,7 @@ mod tests {
         let mut s = "Content-Disposition: attachment;".to_string();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
+        let mut w = EmailWriter::new(&mut s, line_len, true);
         encode("filename", "caffè.txt", &mut w).unwrap();
 
         assert_eq!(
@@ -181,7 +172,7 @@ mod tests {
         let mut s = "Content-Disposition: attachment;".to_string();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
+        let mut w = EmailWriter::new(&mut s, line_len, true);
         encode(
             "filename",
             "testing-to-see-what-happens-when-📕📕📕📕📕📕📕📕📕📕📕-are-placed-on-the-boundary.txt",
@@ -207,7 +198,7 @@ mod tests {
         let mut s = "Content-Disposition: attachment;".to_string();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
+        let mut w = EmailWriter::new(&mut s, line_len, true);
         encode(
             "filename",
             "testing-to-see-what-happens-when-books-are-placed-in-the-second-part-📕📕📕📕📕📕📕📕📕📕📕.txt",
