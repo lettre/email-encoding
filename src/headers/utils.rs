@@ -20,6 +20,7 @@ impl<'a> EmailWriter<'a> {
         }
     }
 
+    #[allow(dead_code)]
     pub(crate) fn new_line(&mut self) -> fmt::Result {
         self.writer.write_str("\r\n ")?;
         self.line_len = 1;
@@ -76,6 +77,8 @@ pub(super) fn str_is_ascii_alphanumeric(s: &str) -> bool {
     s.chars().all(|c| c.is_ascii_alphanumeric())
 }
 
+// TODO: function seems unused for now. Remove?
+#[allow(dead_code)]
 pub(super) fn str_is_ascii_alphanumeric_plus(s: &str) -> bool {
     s.chars().all(char_is_ascii_alphanumeric_plus)
 }

@@ -5,6 +5,8 @@ use super::{utils, EmailWriter, MAX_LINE_LEN};
 const ENCODING_START_PREFIX: &str = "=?utf-8?b?";
 const ENCODING_END_SUFFIX: &str = "?=";
 
+// TODO: function is unused for now. Remove allow(dead_code) later on.
+#[allow(dead_code)]
 pub(super) fn encode(mut s: &str, w: &mut EmailWriter) -> fmt::Result {
     while !s.is_empty() {
         let remaining_line_len = MAX_LINE_LEN.saturating_sub(
