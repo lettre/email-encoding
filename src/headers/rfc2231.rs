@@ -235,4 +235,57 @@ mod tests {
             )
         );
     }
+
+    #[test]
+    fn parameter_dont_split_on_hex_boundary() {
+        let base_header = "Content-Disposition: attachment;".to_string();
+        let line_len = base_header.len();
+
+        for start_offset in &["", "x", "xx", "xxx"] {
+            let mut filename = start_offset.to_string();
+
+            for i in 1..256 {
+                // 'Ü' results in two hex chars %C3%9C
+                filename = filename + "Ü";
+
+                let mut output = base_header.clone();
+                let mut w = EmailWriter::new(&mut output, line_len, true);
+                encode("filename", &filename, &mut w).unwrap();
+
+                // look for all hex encoded chars
+                let output_len = output.len();
+                let mut found_hex_count = 0;
+                for (percent_sign_idx, _) in output.match_indices('%') {
+                    assert!(percent_sign_idx + 3 <= output_len);
+
+                    // verify we get the expected hex sequence for an 'Ü'
+                    let must_be_hex = &output[percent_sign_idx + 1..percent_sign_idx + 3];
+                    assert!(
+                        must_be_hex == "C3" || must_be_hex == "9C",
+                        "unexpected hex char: {}",
+                        must_be_hex
+                    );
+                    found_hex_count += 1;
+                }
+                // verify the number of hex encoded chars adds up
+                let number_of_chars_in_hex = 2;
+                assert_eq!(found_hex_count, i * number_of_chars_in_hex);
+
+                // verify max line length
+                let mut last_newline_pos = 0;
+                for (newline_idx, _) in output.match_indices("\r\n") {
+                    let line_length = newline_idx - last_newline_pos;
+                    assert!(
+                        line_length < MAX_LINE_LEN,
+                        "expected line length exceeded: {} > {}",
+                        line_length,
+                        MAX_LINE_LEN
+                    );
+                    last_newline_pos = newline_idx;
+                }
+                // ensure there was at least one newline
+                assert_ne!(0, last_newline_pos);
+            }
+        }
+    }
 }
