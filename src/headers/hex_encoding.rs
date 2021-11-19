@@ -2,11 +2,11 @@ use std::fmt::{self, Write};
 
 use super::{hex, utils, EmailWriter};
 
-pub(super) fn percent_encode_char(w: &mut EmailWriter, to_append: char) -> fmt::Result {
+pub(super) fn percent_encode_char(w: &mut EmailWriter<'_>, to_append: char) -> fmt::Result {
     encode_char(w, '%', to_append)
 }
 
-fn encode_char(w: &mut EmailWriter, prefix: char, to_append: char) -> fmt::Result {
+fn encode_char(w: &mut EmailWriter<'_>, prefix: char, to_append: char) -> fmt::Result {
     if utils::char_is_ascii_alphanumeric_plus(to_append) {
         w.write_char(to_append)?;
     } else {
@@ -32,7 +32,7 @@ fn encode_char(w: &mut EmailWriter, prefix: char, to_append: char) -> fmt::Resul
     Ok(())
 }
 
-fn encode_byte(w: &mut EmailWriter, prefix: char, to_append: u8) -> fmt::Result {
+fn encode_byte(w: &mut EmailWriter<'_>, prefix: char, to_append: u8) -> fmt::Result {
     let chars = hex::encode_byte(to_append);
     w.write_char(prefix)?;
     w.write_char(char::from(chars[0]))?;
