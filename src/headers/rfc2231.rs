@@ -2,7 +2,7 @@ use std::fmt::{self, Write};
 
 use super::{hex_encoding, utils, EmailWriter, MAX_LINE_LEN};
 
-pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter) -> fmt::Result {
+pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
     assert!(
         utils::str_is_ascii_alphanumeric(key),
         "`key` must only be composed of ascii alphanumeric chars"
