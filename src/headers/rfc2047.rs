@@ -7,7 +7,7 @@ const ENCODING_END_SUFFIX: &str = "?=";
 
 // TODO: function is unused for now. Remove allow(dead_code) later on.
 #[allow(dead_code)]
-pub(super) fn encode(mut s: &str, w: &mut EmailWriter) -> fmt::Result {
+pub(super) fn encode(mut s: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
     while !s.is_empty() {
         let remaining_line_len = MAX_LINE_LEN.saturating_sub(
             ENCODING_START_PREFIX.len() + ENCODING_END_SUFFIX.len() + w.line_len() + "\r\n".len(),

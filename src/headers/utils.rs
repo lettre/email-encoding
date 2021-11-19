@@ -95,7 +95,7 @@ const fn char_is_ascii_printable(c: char) -> bool {
     matches!(c, ' '..='~')
 }
 
-pub(super) fn write_escaped(s: &str, w: &mut EmailWriter) -> fmt::Result {
+pub(super) fn write_escaped(s: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
     debug_assert!(s.is_ascii());
 
     for b in s.bytes() {
