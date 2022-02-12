@@ -58,14 +58,12 @@ pub fn encode(value: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
         }
         Strategy::Quoted => {
             w.write_char('"')?;
-            // TODO: line folding
-            w.write_str(value)?;
+            w.folding().write_str(value)?;
             w.write_char('"')?;
         }
         Strategy::QuotedEscaped => {
             w.write_char('"')?;
-            // TODO: line folding
-            utils::write_escaped(value, w)?;
+            utils::write_escaped(value, &mut w.folding())?;
             w.write_char('"')?;
         }
         Strategy::Rfc2047 => {
@@ -105,6 +103,20 @@ mod tests {
     }
 
     #[test]
+    fn quoted_long() {
+        let mut s = String::new();
+        let line_len = s.len();
+
+        let mut w = EmailWriter::new(&mut s, line_len, false);
+        encode("1234567890 abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd", &mut w).unwrap();
+
+        assert_eq!(s, concat!(
+            "\"1234567890\r\n",
+            " abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd\""
+        ));
+    }
+
+    #[test]
     fn quoted_escaped() {
         let mut s = String::new();
         let line_len = s.len();
@@ -114,6 +126,21 @@ mod tests {
 
         assert_eq!(s, "\"12345\\\\67890 ab\\\"cd\"");
     }
+
+    // TODO: get it working for the quoted escaped strategy
+    // #[test]
+    // fn quoted_escaped_long() {
+    //     let mut s = String::new();
+    //     let line_len = s.len();
+    //
+    //     let mut w = EmailWriter::new(&mut s, line_len, false);
+    //     encode("12345\\67890 ab\"cdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd", &mut w).unwrap();
+    //
+    //     assert_eq!(s, concat!(
+    //         "\"12345\\\\67890\r\n",
+    //         " ab\\\"cdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd\""
+    //     ));
+    // }
 
     #[test]
     fn rfc2047() {

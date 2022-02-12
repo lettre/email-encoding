@@ -1,6 +1,8 @@
 use std::fmt::{self, Write};
 use std::mem;
 
+use super::MAX_LINE_LEN;
+
 pub struct EmailWriter<'a> {
     writer: &'a mut dyn Write,
     line_len: usize,
@@ -45,6 +47,10 @@ impl<'a> EmailWriter<'a> {
     pub(crate) fn line_len(&self) -> usize {
         self.line_len
     }
+
+    pub(crate) fn folding<'b>(&'b mut self) -> FoldingEmailWriter<'a, 'b> {
+        FoldingEmailWriter { writer: self }
+    }
 }
 
 impl<'a> Write for EmailWriter<'a> {
@@ -70,5 +76,33 @@ impl<'a> Write for EmailWriter<'a> {
         self.line_len += c.len_utf8();
 
         Ok(())
+    }
+}
+
+pub(crate) struct FoldingEmailWriter<'a, 'b> {
+    writer: &'b mut EmailWriter<'a>,
+}
+
+impl<'a, 'b> Write for FoldingEmailWriter<'a, 'b> {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        let mut first = true;
+
+        for word in s.split(' ') {
+            if !mem::take(&mut first) {
+                self.writer.space();
+
+                if (self.writer.line_len + word.len()) > MAX_LINE_LEN {
+                    self.writer.new_line()?;
+                }
+            }
+
+            self.writer.write_str(word)?;
+        }
+
+        Ok(())
+    }
+
+    fn write_char(&mut self, c: char) -> fmt::Result {
+        self.write_str(c.encode_utf8(&mut [0u8; 4]))
     }
 }

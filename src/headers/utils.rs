@@ -1,7 +1,5 @@
 use std::fmt::{self, Write};
 
-use super::EmailWriter;
-
 pub(super) fn str_is_ascii_alphanumeric(s: &str) -> bool {
     s.bytes().all(|c| c.is_ascii_alphanumeric())
 }
@@ -18,7 +16,7 @@ const fn char_is_ascii_printable(c: u8) -> bool {
     matches!(c, b' '..=b'~')
 }
 
-pub(super) fn write_escaped(s: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
+pub(super) fn write_escaped(s: &str, w: &mut impl Write) -> fmt::Result {
     debug_assert!(s.is_ascii());
 
     for b in s.bytes() {
