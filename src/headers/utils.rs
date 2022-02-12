@@ -74,13 +74,7 @@ impl<'a> Write for EmailWriter<'a> {
 }
 
 pub(super) fn str_is_ascii_alphanumeric(s: &str) -> bool {
-    s.chars().all(|c| c.is_ascii_alphanumeric())
-}
-
-// TODO: function seems unused for now. Remove?
-#[allow(dead_code)]
-pub(super) fn str_is_ascii_alphanumeric_plus(s: &str) -> bool {
-    s.chars().all(char_is_ascii_alphanumeric_plus)
+    s.bytes().all(|c| c.is_ascii_alphanumeric())
 }
 
 pub(super) const fn char_is_ascii_alphanumeric_plus(c: char) -> bool {
@@ -88,11 +82,11 @@ pub(super) const fn char_is_ascii_alphanumeric_plus(c: char) -> bool {
 }
 
 pub(super) fn str_is_ascii_printable(s: &str) -> bool {
-    s.chars().all(char_is_ascii_printable)
+    s.bytes().all(char_is_ascii_printable)
 }
 
-const fn char_is_ascii_printable(c: char) -> bool {
-    matches!(c, ' '..='~')
+const fn char_is_ascii_printable(c: u8) -> bool {
+    matches!(c, b' '..=b'~')
 }
 
 pub(super) fn write_escaped(s: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
