@@ -37,7 +37,7 @@ impl Encoding {
             }
             (InputKind::Ascii, true, _) => {
                 // Input is ascii but doesn't fix the maximum line length
-                Self::QuotedPrintable
+                quoted_printable_or_base64(&input)
             }
             (InputKind::Utf8, false, true) => {
                 // Input is utf-8, line fits, the server supports it
@@ -45,11 +45,11 @@ impl Encoding {
             }
             (InputKind::Utf8, true, true) => {
                 // Input is utf-8, line doesn't fit, the server supports it
-                Self::QuotedPrintable
+                quoted_printable_or_base64(&input)
             }
             (InputKind::Utf8, _, false) => {
                 // Input is utf-8, the server doesn't support it
-                Self::QuotedPrintable
+                quoted_printable_or_base64(&input)
             }
             (InputKind::Binary, _, _) => {
                 // Input is binary
@@ -65,6 +65,22 @@ fn line_too_long(b: &[u8]) -> bool {
         let last_ = mem::replace(&mut last, i);
         (i - last_) >= 76
     }) || (b.len() - last) >= 76
+}
+
+fn quoted_printable_or_base64(b: &[u8]) -> Encoding {
+    if quoted_printable_efficient(b) {
+        Encoding::QuotedPrintable
+    } else {
+        Encoding::Base64
+    }
+}
+
+fn quoted_printable_efficient(b: &[u8]) -> bool {
+    let requiring_escaping = b
+        .iter()
+        .filter(|&b| !matches!(b, b'\t' | b' '..=b'~'))
+        .count();
+    requiring_escaping <= (b.len() / 3) // 33.33% or less
 }
 
 #[cfg(test)]
@@ -116,17 +132,32 @@ mod tests {
     }
 
     #[test]
-    fn utf8_short_str_unsupported() {
-        let input = "0123 📬";
+    fn utf8_short_str_unsupported_efficient() {
+        let input = "01234567899876543210 📬";
 
         assert_eq!(Encoding::choose(input, false), Encoding::QuotedPrintable);
     }
 
     #[test]
-    fn utf8_long_str() {
-        let input = "0123 📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬";
+    fn utf8_short_str_unsupported_inefficient() {
+        let input = "0123 📬";
+
+        assert_eq!(Encoding::choose(input, false), Encoding::Base64);
+    }
+
+    #[test]
+    fn utf8_long_str_efficient() {
+        let input =
+            "01234567899876543210012345678998765432100123456789987654321001234567899876543210";
 
         assert_eq!(Encoding::choose(input, true), Encoding::QuotedPrintable);
+    }
+
+    #[test]
+    fn utf8_long_str_inefficient() {
+        let input = "0123 📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬📬";
+
+        assert_eq!(Encoding::choose(input, true), Encoding::Base64);
     }
 
     #[test]
