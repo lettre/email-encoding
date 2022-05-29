@@ -8,6 +8,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 base64 = { version = "0.13", default-features = false }
+memchr = "2"
 
 [dev-dependencies]
 pretty_assertions = "1"
