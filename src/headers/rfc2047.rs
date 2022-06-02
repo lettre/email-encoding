@@ -5,7 +5,7 @@ use super::{utils, EmailWriter, MAX_LINE_LEN};
 const ENCODING_START_PREFIX: &str = "=?utf-8?b?";
 const ENCODING_END_SUFFIX: &str = "?=";
 
-pub(super) fn encode(mut s: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
+pub fn encode(mut s: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
     while !s.is_empty() {
         let remaining_line_len = MAX_LINE_LEN.saturating_sub(
             ENCODING_START_PREFIX.len() + ENCODING_END_SUFFIX.len() + w.line_len() + "\r\n".len(),
