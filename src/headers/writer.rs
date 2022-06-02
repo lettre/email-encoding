@@ -31,7 +31,7 @@ impl<'a> EmailWriter<'a> {
         Ok(())
     }
 
-    pub(crate) fn new_line_no_initial_space(&mut self) -> fmt::Result {
+    pub fn new_line_no_initial_space(&mut self) -> fmt::Result {
         self.writer.write_str("\r\n")?;
         self.line_len = 0;
         self.write_space_on_next_write = false;
@@ -44,11 +44,11 @@ impl<'a> EmailWriter<'a> {
         self.write_space_on_next_write = true;
     }
 
-    pub(crate) fn line_len(&self) -> usize {
+    pub fn line_len(&self) -> usize {
         self.line_len
     }
 
-    pub(crate) fn folding<'b>(&'b mut self) -> FoldingEmailWriter<'a, 'b> {
+    pub fn folding<'b>(&'b mut self) -> FoldingEmailWriter<'a, 'b> {
         FoldingEmailWriter { writer: self }
     }
 }
@@ -79,7 +79,7 @@ impl<'a> Write for EmailWriter<'a> {
     }
 }
 
-pub(crate) struct FoldingEmailWriter<'a, 'b> {
+pub struct FoldingEmailWriter<'a, 'b> {
     writer: &'b mut EmailWriter<'a>,
 }
 
