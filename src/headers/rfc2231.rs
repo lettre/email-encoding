@@ -246,7 +246,7 @@ mod tests {
 
             for i in 1..256 {
                 // 'Ü' results in two hex chars %C3%9C
-                filename = filename + "Ü";
+                filename.push('Ü');
 
                 let mut output = base_header.clone();
                 let mut w = EmailWriter::new(&mut output, line_len, true);
