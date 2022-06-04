@@ -1,7 +1,60 @@
+//! [RFC 2231] encoder
+//!
+//! [RFC 2231]: https://datatracker.ietf.org/doc/html/rfc2231
+
 use std::fmt::{self, Write};
 
 use super::{hex_encoding, utils, EmailWriter, MAX_LINE_LEN};
 
+/// Encode a string via RFC 2231
+///
+/// # Examples
+///
+/// ```rust
+/// # use email_encoding::headers::writer::EmailWriter;
+/// # fn main() -> std::fmt::Result {
+/// {
+///     let input = "invoice.pdf";
+///
+///     let mut output = String::new();
+///     let mut writer = EmailWriter::new(&mut output, 0, false);
+///     email_encoding::headers::rfc2231::encode("filename", input, &mut writer)?;
+///     assert_eq!(output, "filename=\"invoice.pdf\"");
+/// }
+///
+/// {
+///     let input = "invoice_2022_06_04_letshaveaverylongfilenamewhynotemailcanhandleit.pdf";
+///
+///     let mut output = String::new();
+///     let mut writer = EmailWriter::new(&mut output, 0, false);
+///     email_encoding::headers::rfc2231::encode("filename", input, &mut writer)?;
+///     assert_eq!(
+///         output,
+///         concat!(
+///             "\r\n",
+///             " filename*0=\"invoice_2022_06_04_letshaveaverylongfilenamewhynotemailcanha\";\r\n",
+///             " filename*1=\"ndleit.pdf\""
+///         )
+///     );
+/// }
+///
+/// {
+///     let input = "faktúra.pdf";
+///
+///     let mut output = String::new();
+///     let mut writer = EmailWriter::new(&mut output, 0, false);
+///     email_encoding::headers::rfc2231::encode("filename", input, &mut writer)?;
+///     assert_eq!(
+///         output,
+///         concat!(
+///             "\r\n",
+///             " filename*0*=utf-8''fakt%C3%BAra.pdf"
+///         )
+///     );
+/// }
+/// # Ok(())
+/// # }
+/// ```
 pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
     assert!(
         utils::str_is_ascii_alphanumeric(key),

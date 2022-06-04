@@ -1,9 +1,42 @@
+//! Base64 email body encoder.
+
 use std::fmt::{self, Write};
 use std::str;
 
 const LINE_LEN: usize = 76;
 const CRLF: &str = "\r\n";
 
+/// Base64 encode the provided bytes.
+///
+/// Splits the provided `b` into 57 bytes chunks and
+/// base64 encodes them, writing the resulting 76 characters
+/// CRLF sequence into `w`.
+///
+/// The last line may be less than 76 characters in length
+/// and will not end
+///
+/// # Examples
+///
+/// ```rust
+/// # fn main() -> std::fmt::Result {
+/// let input = "Hello!
+/// You've got mail!
+/// This one is base64 encoded.
+///
+/// Enjoy your bytes 📬📬📬";
+///
+/// let mut output = String::new();
+/// email_encoding::body::base64::encode(input.as_bytes(), &mut output)?;
+/// assert_eq!(
+///     output,
+///     concat!(
+///         "SGVsbG8hCllvdSd2ZSBnb3QgbWFpbCEKVGhpcyBvbmUgaXMgYmFzZTY0IGVuY29kZWQuCgpFbmpv\r\n",
+///         "eSB5b3VyIGJ5dGVzIPCfk6zwn5Os8J+TrA=="
+///     )
+/// );
+/// # Ok(())
+/// # }
+/// ```
 pub fn encode(b: &[u8], w: &mut dyn Write) -> fmt::Result {
     let mut buf = [0; LINE_LEN];
 
@@ -20,6 +53,16 @@ pub fn encode(b: &[u8], w: &mut dyn Write) -> fmt::Result {
     Ok(())
 }
 
+/// Predict how many bytes [`encode`] is going to write given a `input_len` input length.
+///
+/// # Examples
+///
+/// ```rust
+/// # use email_encoding::body::base64::encoded_len;
+/// assert_eq!(encoded_len(0), 0);
+/// assert_eq!(encoded_len(16), 24);
+/// assert_eq!(encoded_len(300), 410);
+/// ```
 pub fn encoded_len(input_len: usize) -> usize {
     let mut base64_len = input_len / 3 * 4;
     if input_len % 3 != 0 {

@@ -1,3 +1,7 @@
+//! [RFC 2047] encoder
+//!
+//! [RFC 2047]: https://datatracker.ietf.org/doc/html/rfc2047
+
 use std::fmt::{self, Write};
 
 use super::{utils, EmailWriter, MAX_LINE_LEN};
@@ -5,6 +9,22 @@ use super::{utils, EmailWriter, MAX_LINE_LEN};
 const ENCODING_START_PREFIX: &str = "=?utf-8?b?";
 const ENCODING_END_SUFFIX: &str = "?=";
 
+/// Encode a string via RFC 2047
+///
+/// # Examples
+///
+/// ```rust
+/// # use email_encoding::headers::writer::EmailWriter;
+/// # fn main() -> std::fmt::Result {
+/// let input = "Adrián";
+///
+/// let mut output = String::new();
+/// let mut writer = EmailWriter::new(&mut output, 0, false);
+/// email_encoding::headers::rfc2047::encode(input, &mut writer)?;
+/// assert_eq!(output, "=?utf-8?b?QWRyacOhbg==?=");
+/// # Ok(())
+/// # }
+/// ```
 pub fn encode(mut s: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
     while !s.is_empty() {
         let remaining_line_len = MAX_LINE_LEN.saturating_sub(

@@ -1,7 +1,54 @@
+//! Quoted String encoder
+
 use std::fmt::{self, Write};
 
 use super::{rfc2047, utils, EmailWriter};
 
+/// Encode a string that may need to be quoted.
+///
+/// # Examples
+///
+/// ```rust
+/// # use email_encoding::headers::writer::EmailWriter;
+/// # fn main() -> std::fmt::Result {
+/// {
+///     let input = "John";
+///
+///     let mut output = String::new();
+///     let mut writer = EmailWriter::new(&mut output, 0, false);
+///     email_encoding::headers::quoted_string::encode(input, &mut writer)?;
+///     assert_eq!(output, "John");
+/// }
+///
+/// {
+///     let input = "John Smith";
+///
+///     let mut output = String::new();
+///     let mut writer = EmailWriter::new(&mut output, 0, false);
+///     email_encoding::headers::quoted_string::encode(input, &mut writer)?;
+///     assert_eq!(output, "\"John Smith\"");
+/// }
+///
+/// {
+///     let input = "Rogue \" User";
+///
+///     let mut output = String::new();
+///     let mut writer = EmailWriter::new(&mut output, 0, false);
+///     email_encoding::headers::quoted_string::encode(input, &mut writer)?;
+///     assert_eq!(output, "\"Rogue \\\" User\"");
+/// }
+///
+/// {
+///     let input = "Adrián";
+///
+///     let mut output = String::new();
+///     let mut writer = EmailWriter::new(&mut output, 0, false);
+///     email_encoding::headers::quoted_string::encode(input, &mut writer)?;
+///     assert_eq!(output, "=?utf-8?b?QWRyacOhbg==?=");
+/// }
+/// # Ok(())
+/// # }
+/// ```
 pub fn encode(value: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
     enum Strategy {
         Plain,
