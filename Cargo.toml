@@ -1,6 +1,6 @@
 [package]
 name = "email-encoding"
-version = "0.1.0"
+version = "0.1.1"
 description = "Low level email encoding RFCs implementations"
 edition = "2021"
 rust-version = "1.56"

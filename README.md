@@ -2,7 +2,7 @@
 
 [![crates.io](https://img.shields.io/crates/v/email-encoding.svg)](https://crates.io/crates/email-encoding)
 [![Documentation](https://docs.rs/email-encoding/badge.svg)](https://docs.rs/email-encoding)
-[![dependency status](https://deps.rs/crate/email-encoding/0.1.0/status.svg)](https://deps.rs/crate/email-encoding/0.1.0)
+[![dependency status](https://deps.rs/crate/email-encoding/0.1.1/status.svg)](https://deps.rs/crate/email-encoding/0.1.1)
 [![Rustc Version 1.56.0+](https://img.shields.io/badge/rustc-1.56.0+-lightgray.svg)](https://blog.rust-lang.org/2021/10/21/Rust-1.56.0.html)
 [![CI](https://github.com/lettre/email-encoding/actions/workflows/ci.yml/badge.svg)](https://github.com/lettre/email-encoding/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/lettre/email-encoding/branch/main/graph/badge.svg)](https://codecov.io/gh/lettre/email-encoding)
