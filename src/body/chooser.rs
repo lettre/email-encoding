@@ -22,6 +22,56 @@ impl<'a> StrOrBytes<'a> {
 }
 
 impl Encoding {
+    /// Choose the most efficient `Encoding` for `input`
+    ///
+    /// Look into `input` and decide what encoding format could best
+    /// be used to represent it.
+    ///
+    /// If the SMTP server supports the `SMTPUTF8` extension
+    /// `supports_utf8` _may_ me set to `true`, otherwise `false`
+    /// is the safest option.
+    ///
+    /// Possible return values based on `supports_utf8`
+    ///
+    /// | `Encoding`         | `false` | `true` |
+    /// | ------------------ | ------- | ------ |
+    /// | `7bit`             | ✅      | ✅     |
+    /// | `8bit`             | ❌      | ✅     |
+    /// | `quoted-printable` | ✅      | ✅     |
+    /// | `base64`           | ✅      | ✅     |
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use email_encoding::body::Encoding;
+    /// // Ascii
+    /// {
+    ///     let input = "Hello, World!";
+    ///     assert_eq!(Encoding::choose(input, false), Encoding::SevenBit);
+    ///     assert_eq!(Encoding::choose(input, true), Encoding::SevenBit);
+    /// }
+    ///
+    /// // Mostly ascii + utf-8
+    /// {
+    ///     let input = "Hello, World! 📬";
+    ///     assert_eq!(Encoding::choose(input, false), Encoding::QuotedPrintable);
+    ///     assert_eq!(Encoding::choose(input, true), Encoding::EightBit);
+    /// }
+    ///
+    /// // Mostly utf-8
+    /// {
+    ///     let input = "Hello! 📬📬📬📬📬📬📬📬📬📬";
+    ///     assert_eq!(Encoding::choose(input, false), Encoding::Base64);
+    ///     assert_eq!(Encoding::choose(input, true), Encoding::EightBit);
+    /// }
+    ///
+    /// // Non utf-8 bytes
+    /// {
+    ///     let input = &[255, 35, 123, 190];
+    ///     assert_eq!(Encoding::choose(input, false), Encoding::Base64);
+    ///     assert_eq!(Encoding::choose(input, true), Encoding::Base64);
+    /// }
+    /// ```
     pub fn choose<'a>(input: impl Into<StrOrBytes<'a>>, supports_utf8: bool) -> Self {
         let input = input.into();
         Self::choose_impl(input, supports_utf8)

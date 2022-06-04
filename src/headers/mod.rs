@@ -1,3 +1,5 @@
+//! Email header encoding algorithms.
+
 #[deprecated(note = "Import it through the writer module", since = "0.1.1")]
 pub use self::writer::EmailWriter;
 
