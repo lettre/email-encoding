@@ -1,4 +1,4 @@
-//! [RFC 2231] encoder
+//! [RFC 2231] encoder.
 //!
 //! [RFC 2231]: https://datatracker.ietf.org/doc/html/rfc2231
 
@@ -6,7 +6,7 @@ use std::fmt::{self, Write};
 
 use super::{hex_encoding, utils, EmailWriter, MAX_LINE_LEN};
 
-/// Encode a string via RFC 2231
+/// Encode a string via RFC 2231.
 ///
 /// # Examples
 ///

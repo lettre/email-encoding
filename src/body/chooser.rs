@@ -22,7 +22,7 @@ impl<'a> StrOrBytes<'a> {
 }
 
 impl Encoding {
-    /// Chose the most efficient `Encoding` for `input`
+    /// Choose the most efficient `Encoding` for `input`
     ///
     /// Look into `input` and decide what encoding format could best
     /// be used to represent it.
@@ -31,7 +31,7 @@ impl Encoding {
     /// `supports_utf8` _may_ me set to `true`, otherwise `false`
     /// is the safest option.
     ///
-    /// Possible values this function can return based on `supports_utf8`
+    /// Possible return values based on `supports_utf8`
     ///
     /// | `Encoding`         | `false` | `true` |
     /// | ------------------ | ------- | ------ |

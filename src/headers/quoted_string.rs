@@ -1,4 +1,4 @@
-//! Quoted String encoder
+//! Quoted String encoder.
 
 use std::fmt::{self, Write};
 

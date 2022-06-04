@@ -1,4 +1,4 @@
-//! [RFC 2047] encoder
+//! [RFC 2047] encoder.
 //!
 //! [RFC 2047]: https://datatracker.ietf.org/doc/html/rfc2047
 
@@ -9,7 +9,7 @@ use super::{utils, EmailWriter, MAX_LINE_LEN};
 const ENCODING_START_PREFIX: &str = "=?utf-8?b?";
 const ENCODING_END_SUFFIX: &str = "?=";
 
-/// Encode a string via RFC 2047
+/// Encode a string via RFC 2047.
 ///
 /// # Examples
 ///

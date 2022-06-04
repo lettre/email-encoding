@@ -13,7 +13,7 @@ const CRLF: &str = "\r\n";
 /// CRLF sequence into `w`.
 ///
 /// The last line may be less than 76 characters in length
-/// and will not end
+/// and will not end in CRLF.
 ///
 /// # Examples
 ///
