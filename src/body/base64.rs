@@ -40,12 +40,12 @@ const CRLF: &str = "\r\n";
 pub fn encode(b: &[u8], w: &mut dyn Write) -> fmt::Result {
     let mut buf = [0; LINE_LEN];
 
-    const CHUNK_LEN: usize = LINE_LEN / 4 * 3;
-    for chunk in b.chunks(CHUNK_LEN) {
+    let mut chunks = b.chunks(LINE_LEN / 4 * 3).peekable();
+    while let Some(chunk) = chunks.next() {
         let len = ::base64::encode_config_slice(chunk, ::base64::STANDARD, &mut buf);
 
         w.write_str(str::from_utf8(&buf[..len]).expect("base64 produced an invalid encode"))?;
-        if chunk.len() == CHUNK_LEN {
+        if chunks.peek().is_some() {
             w.write_str(CRLF)?;
         }
     }
@@ -68,7 +68,10 @@ pub fn encoded_len(input_len: usize) -> usize {
     if input_len % 3 != 0 {
         base64_len += 4 - base64_len % 4;
     }
-    let crlf_len = base64_len / LINE_LEN * CRLF.len();
+    let mut crlf_len = base64_len / LINE_LEN * CRLF.len();
+    if crlf_len >= CRLF.len() && base64_len % LINE_LEN == 0 {
+        crlf_len -= CRLF.len();
+    }
     base64_len + crlf_len
 }
 
@@ -140,6 +143,25 @@ mod tests {
             concat!(
                 "MDEyMzQ1Njc4OTk4NzY1NDMyMTAwMTIzNDU2Nzg5OTg3NjU0MzIxMDAxMjM0NTY3ODk5ODc2NTQz\r\n",
                 "MjEwMDEyMzQ1Njc4OTk4NzY1NDMyMTA="
+            )
+        );
+        assert_eq!(output.len(), encoded_len(input.len()));
+    }
+
+    #[test]
+    fn multiline_exact() {
+        let input =
+            b"012345678998765432100123456789987654321001234567899876543210012345678998765432100123456789987654321001234567899876543210012345678998765432100123456789987654321001234567899";
+        let mut output = String::new();
+
+        encode(input, &mut output).unwrap();
+
+        assert_eq!(
+            output,
+            concat!(
+                "MDEyMzQ1Njc4OTk4NzY1NDMyMTAwMTIzNDU2Nzg5OTg3NjU0MzIxMDAxMjM0NTY3ODk5ODc2NTQz\r\n",
+                "MjEwMDEyMzQ1Njc4OTk4NzY1NDMyMTAwMTIzNDU2Nzg5OTg3NjU0MzIxMDAxMjM0NTY3ODk5ODc2\r\n",
+                "NTQzMjEwMDEyMzQ1Njc4OTk4NzY1NDMyMTAwMTIzNDU2Nzg5OTg3NjU0MzIxMDAxMjM0NTY3ODk5"
             )
         );
         assert_eq!(output.len(), encoded_len(input.len()));
