@@ -77,6 +77,8 @@ pub fn encoded_len(input_len: usize) -> usize {
 
 #[cfg(test)]
 mod tests {
+    use pretty_assertions::assert_eq;
+
     use super::{encode, encoded_len};
 
     #[test]

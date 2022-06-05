@@ -47,6 +47,8 @@ pub(super) fn truncate_to_char_boundary(s: &str, mut max: usize) -> &str {
 
 #[cfg(test)]
 mod tests {
+    use pretty_assertions::assert_eq;
+
     use super::*;
 
     #[test]
