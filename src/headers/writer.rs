@@ -1,10 +1,16 @@
-#![allow(missing_docs)]
+//! Utilities for writing email headers to a [`Write`]r.
+//!
+//! [`Write`]: std::fmt::Write
 
 use std::fmt::{self, Write};
 use std::mem;
 
 use super::MAX_LINE_LEN;
 
+/// Wrapper around [`Write`] that remembers the length of the
+/// last line written to it.
+///
+/// [`Write`]: std::fmt::Write
 pub struct EmailWriter<'a> {
     writer: &'a mut dyn Write,
     line_len: usize,
@@ -12,6 +18,11 @@ pub struct EmailWriter<'a> {
 }
 
 impl<'a> EmailWriter<'a> {
+    /// Construct a new `EmailWriter`.
+    ///
+    /// * `line_len` is the length of the last line in `writer`.
+    /// * `write_space_on_next_write` is whether the writer must
+    ///   go to a new line when writing it's first character
     pub fn new(
         writer: &'a mut dyn Write,
         line_len: usize,
@@ -33,6 +44,7 @@ impl<'a> EmailWriter<'a> {
         Ok(())
     }
 
+    /// Go to a new line and reset the `line_len` to `0`.
     pub fn new_line_no_initial_space(&mut self) -> fmt::Result {
         self.writer.write_str("\r\n")?;
         self.line_len = 0;
@@ -41,15 +53,23 @@ impl<'a> EmailWriter<'a> {
         Ok(())
     }
 
+    /// Write a space which _might_ get wrapped to a new line on the next write.
+    ///
+    /// This method shouldn't be called multiple times consecutively,
+    /// and will panic if debug assertions are on.
     pub fn space(&mut self) {
         debug_assert!(!self.write_space_on_next_write);
         self.write_space_on_next_write = true;
     }
 
+    /// Get the length in bytes of the last line written to the inner writer.
     pub fn line_len(&self) -> usize {
         self.line_len
     }
 
+    /// Get a [`Write`]r which automatically line folds text written to it.
+    ///
+    /// [`Write`]: std::fmt::Write
     pub fn folding<'b>(&'b mut self) -> FoldingEmailWriter<'a, 'b> {
         FoldingEmailWriter { writer: self }
     }
@@ -81,6 +101,10 @@ impl<'a> Write for EmailWriter<'a> {
     }
 }
 
+/// Wrapper around [`Write`] that remembers the length of the
+/// last line and automatically line folds text written to it.
+///
+/// [`Write`]: std::fmt::Write
 pub struct FoldingEmailWriter<'a, 'b> {
     writer: &'b mut EmailWriter<'a>,
 }
