@@ -2,6 +2,7 @@
 name = "email-encoding"
 version = "0.1.2"
 description = "Low level email encoding RFCs implementations"
+repository = "https://github.com/lettre/email-encoding"
 edition = "2021"
 rust-version = "1.56"
 license = "MIT OR Apache-2.0"
