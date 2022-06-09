@@ -35,8 +35,17 @@ impl<'a> EmailWriter<'a> {
         }
     }
 
-    #[allow(dead_code)]
-    pub(crate) fn new_line(&mut self) -> fmt::Result {
+    /// Go to a new line and reset the `line_len` to `0`.
+    pub fn new_line(&mut self) -> fmt::Result {
+        self.writer.write_str("\r\n")?;
+        self.line_len = 0;
+        self.write_space_on_next_write = false;
+
+        Ok(())
+    }
+
+    /// Equivalent to calling `new_line()` and `space()` consecutively.
+    pub(crate) fn new_line_and_space(&mut self) -> fmt::Result {
         self.writer.write_str("\r\n ")?;
         self.line_len = 1;
         self.write_space_on_next_write = false;
@@ -44,13 +53,11 @@ impl<'a> EmailWriter<'a> {
         Ok(())
     }
 
-    /// Go to a new line and reset the `line_len` to `0`.
+    #[cfg(not(tarpaulin_include))]
+    #[doc(hidden)]
+    #[deprecated(note = "Renamed to `new_line`", since = "0.1.2")]
     pub fn new_line_no_initial_space(&mut self) -> fmt::Result {
-        self.writer.write_str("\r\n")?;
-        self.line_len = 0;
-        self.write_space_on_next_write = false;
-
-        Ok(())
+        self.new_line()
     }
 
     /// Write a space which _might_ get wrapped to a new line on the next write.
@@ -118,7 +125,7 @@ impl<'a, 'b> Write for FoldingEmailWriter<'a, 'b> {
                 self.writer.space();
 
                 if (self.writer.line_len + word.len()) > MAX_LINE_LEN {
-                    self.writer.new_line()?;
+                    self.writer.new_line_and_space()?;
                 }
             }
 

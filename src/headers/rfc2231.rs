@@ -82,7 +82,7 @@ pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter<'_>) -> fmt::Resul
         } else {
             // Doesn't fit line
 
-            w.new_line_no_initial_space()?;
+            w.new_line()?;
 
             let mut i = 0_usize;
             loop {
@@ -101,7 +101,7 @@ pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter<'_>) -> fmt::Resul
                 if !value.is_empty() {
                     // End of line
                     w.write_char(';')?;
-                    w.new_line_no_initial_space()?;
+                    w.new_line()?;
                 } else {
                     // End of value
                     break;
@@ -113,7 +113,7 @@ pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter<'_>) -> fmt::Resul
     } else {
         // Needs encoding (Parameter Value Character Set and Language Information)
 
-        w.new_line_no_initial_space()?;
+        w.new_line()?;
 
         let mut i = 0_usize;
         loop {
@@ -139,7 +139,7 @@ pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter<'_>) -> fmt::Resul
             if !value.is_empty() {
                 // End of line
                 w.write_char(';')?;
-                w.new_line_no_initial_space()?;
+                w.new_line()?;
             } else {
                 // End of value
                 break;
