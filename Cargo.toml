@@ -5,6 +5,8 @@ description = "Low level email encoding RFCs implementations"
 edition = "2021"
 rust-version = "1.56"
 license = "MIT OR Apache-2.0"
+categories = ["email", "encoding"]
+keywords = ["email", "rfc2047", "rfc2231"]
 
 [dependencies]
 base64 = { version = "0.13", default-features = false }
