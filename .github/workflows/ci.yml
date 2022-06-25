@@ -61,6 +61,8 @@ jobs:
             rust: stable
           - name: beta
             rust: beta
+          - name: nightly
+            rust: nightly
           - name: 1.56.0
             rust: 1.56.0  
 
