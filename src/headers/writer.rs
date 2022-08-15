@@ -161,17 +161,33 @@ pub struct FoldingEmailWriter<'a, 'b> {
 }
 
 impl<'a, 'b> Write for FoldingEmailWriter<'a, 'b> {
-    fn write_str(&mut self, s: &str) -> fmt::Result {
-        for word in s.split_inclusive(' ') {
-            if self.writer.can_go_to_new_line_now
-                && self.writer.spaces > 0
-                && (self.writer.projected_line_len() + word.trim_end_matches(' ').len())
-                    > MAX_LINE_LEN
-            {
-                self.writer.new_line()?;
+    fn write_str(&mut self, mut s: &str) -> fmt::Result {
+        while !s.is_empty() {
+            if s.starts_with(' ') {
+                self.writer.space();
+                s = &s[1..];
+                continue;
             }
 
-            self.writer.write_str(word)?;
+            let (start, end) = s.find(' ').map_or((s, ""), |i| s.split_at(i));
+
+            match (
+                self.writer.can_go_to_new_line_now,
+                self.writer.spaces,
+                self.writer.write_decorative_space_on_next_line,
+                (self.writer.projected_line_len() + start.len()) > MAX_LINE_LEN,
+            ) {
+                (true, 1.., false, true) => {
+                    self.writer.new_line()?;
+                }
+                (true, _, true, true) => {
+                    self.writer.new_line_and_space()?;
+                }
+                _ => {}
+            }
+
+            self.writer.write_str(start)?;
+            s = end;
         }
 
         Ok(())
@@ -221,10 +237,117 @@ mod tests {
         {
             let mut w = EmailWriter::new(&mut s, line_len, 1, false, true);
             w.folding().write_str("12345 ").unwrap();
-            w.new_line_and_space().unwrap();
+            w.new_line().unwrap();
             w.folding().write_str("12345").unwrap();
         }
 
-        assert_eq!(s, concat!("Subject: AAAAAAAAAAAAAA 12345\r\n", "  12345"));
+        assert_eq!(s, concat!("Subject: AAAAAAAAAAAAAA 12345\r\n", " 12345"));
+    }
+
+    #[test]
+    fn catch_space() {
+        let mut s = "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_owned();
+        let line_len = s.len();
+
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 1, false, true);
+            w.folding().write_str("BBB ").unwrap();
+            w.folding().write_str("CCCCCCCCCCCCC").unwrap();
+        }
+
+        assert_eq!(
+            s,
+            concat!(
+                "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA BBB\r\n",
+                " CCCCCCCCCCCCC"
+            )
+        );
+    }
+
+    #[test]
+    fn catch_spaces() {
+        let mut s = "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_owned();
+        let line_len = s.len();
+
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 1, false, true);
+            w.folding().write_str("BBB   ").unwrap();
+            w.folding().write_str("CCCCCCCCCCCCC").unwrap();
+        }
+
+        assert_eq!(
+            s,
+            concat!(
+                "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA BBB\r\n",
+                "   CCCCCCCCCCCCC"
+            )
+        );
+    }
+
+    #[test]
+    fn explicit_space() {
+        let mut s = "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_owned();
+        let line_len = s.len();
+
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 1, false, true);
+            w.folding().write_str("BBB").unwrap();
+            w.space();
+            w.folding().write_str("CCCCCCCCCCCCC").unwrap();
+        }
+
+        assert_eq!(
+            s,
+            concat!(
+                "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA BBB\r\n",
+                " CCCCCCCCCCCCC"
+            )
+        );
+    }
+
+    #[test]
+    fn explicit_spaces() {
+        let mut s = "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_owned();
+        let line_len = s.len();
+
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 1, false, true);
+            w.folding().write_str("BBB").unwrap();
+            w.space();
+            w.write_char(' ').unwrap();
+            w.space();
+            w.folding().write_str("CCCCCCCCCCCCC").unwrap();
+        }
+
+        assert_eq!(
+            s,
+            concat!(
+                "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA BBB\r\n",
+                "   CCCCCCCCCCCCC"
+            )
+        );
+    }
+
+    #[test]
+    fn decorative_space() {
+        let mut s = "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            .to_owned();
+        let line_len = s.len();
+
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false, true);
+            w.decorative_space();
+            w.folding().write_str("BBBBBBBBBB").unwrap();
+            w.decorative_space();
+            w.folding().write_str("CCCCCCCCCC").unwrap();
+        }
+
+        assert_eq!(
+            s,
+            concat!(
+                "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n",
+                " BBBBBBBBBB CCCCCCCCCC",
+            )
+        );
     }
 }
