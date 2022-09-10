@@ -79,7 +79,7 @@ impl<'a> EmailWriter<'a> {
     ///
     /// This method shouldn't be called multiple times consecutively,
     /// and will panic if debug assertions are on.
-    pub fn decorative_space(&mut self) {
+    pub fn optional_breakpoint(&mut self) {
         debug_assert!(!self.optional_breakpoint);
         self.optional_breakpoint = true;
     }
@@ -329,16 +329,16 @@ mod tests {
     }
 
     #[test]
-    fn decorative_space() {
+    fn optional_breakpoint() {
         let mut s = "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
             .to_owned();
         let line_len = s.len();
 
         {
             let mut w = EmailWriter::new(&mut s, line_len, 0, false, true);
-            w.decorative_space();
+            w.optional_breakpoint();
             w.folding().write_str("BBBBBBBBBB").unwrap();
-            w.decorative_space();
+            w.optional_breakpoint();
             w.folding().write_str("CCCCCCCCCC").unwrap();
         }
 
