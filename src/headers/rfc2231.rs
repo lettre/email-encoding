@@ -17,8 +17,10 @@ use super::{hex_encoding, utils, EmailWriter, MAX_LINE_LEN};
 ///     let input = "invoice.pdf";
 ///
 ///     let mut output = String::new();
-///     let mut writer = EmailWriter::new(&mut output, 0, false);
-///     email_encoding::headers::rfc2231::encode("filename", input, &mut writer)?;
+///     {
+///         let mut writer = EmailWriter::new(&mut output, 0, 0, false, false);
+///         email_encoding::headers::rfc2231::encode("filename", input, &mut writer)?;
+///     }
 ///     assert_eq!(output, "filename=\"invoice.pdf\"");
 /// }
 ///
@@ -26,8 +28,10 @@ use super::{hex_encoding, utils, EmailWriter, MAX_LINE_LEN};
 ///     let input = "invoice_2022_06_04_letshaveaverylongfilenamewhynotemailcanhandleit.pdf";
 ///
 ///     let mut output = String::new();
-///     let mut writer = EmailWriter::new(&mut output, 0, false);
-///     email_encoding::headers::rfc2231::encode("filename", input, &mut writer)?;
+///     {
+///         let mut writer = EmailWriter::new(&mut output, 0, 0, false, false);
+///         email_encoding::headers::rfc2231::encode("filename", input, &mut writer)?;
+///     }
 ///     assert_eq!(
 ///         output,
 ///         concat!(
@@ -42,8 +46,10 @@ use super::{hex_encoding, utils, EmailWriter, MAX_LINE_LEN};
 ///     let input = "faktúra.pdf";
 ///
 ///     let mut output = String::new();
-///     let mut writer = EmailWriter::new(&mut output, 0, false);
-///     email_encoding::headers::rfc2231::encode("filename", input, &mut writer)?;
+///     {
+///         let mut writer = EmailWriter::new(&mut output, 0, 0, false, false);
+///         email_encoding::headers::rfc2231::encode("filename", input, &mut writer)?;
+///     }
 ///     assert_eq!(
 ///         output,
 ///         concat!(
@@ -163,8 +169,10 @@ mod tests {
         let mut s = "Content-Disposition: attachment;".to_string();
         let line_len = 1;
 
-        let mut w = EmailWriter::new(&mut s, line_len, true);
-        encode("filename", "", &mut w).unwrap();
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, true, true);
+            encode("filename", "", &mut w).unwrap();
+        }
 
         assert_eq!(s, concat!("Content-Disposition: attachment; filename=\"\""));
     }
@@ -174,8 +182,10 @@ mod tests {
         let mut s = "Content-Disposition: attachment;".to_string();
         let line_len = 1;
 
-        let mut w = EmailWriter::new(&mut s, line_len, true);
-        encode("filename", "duck.txt", &mut w).unwrap();
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, true, true);
+            encode("filename", "duck.txt", &mut w).unwrap();
+        }
 
         assert_eq!(
             s,
@@ -188,8 +198,10 @@ mod tests {
         let mut s = "Content-Disposition: attachment;".to_string();
         let line_len = 1;
 
-        let mut w = EmailWriter::new(&mut s, line_len, true);
-        encode("filename", "du\"ck\\.txt", &mut w).unwrap();
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, true, true);
+            encode("filename", "du\"ck\\.txt", &mut w).unwrap();
+        }
 
         assert_eq!(
             s,
@@ -202,13 +214,15 @@ mod tests {
         let mut s = "Content-Disposition: attachment;".to_string();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, true);
-        encode(
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, true, true);
+            encode(
             "filename",
             "a-fairly-long-filename-just-to-see-what-happens-when-we-encode-it-will-the-client-be-able-to-handle-it.txt",
             &mut w,
         )
         .unwrap();
+        }
 
         assert_eq!(
             s,
@@ -225,8 +239,10 @@ mod tests {
         let mut s = "Content-Disposition: attachment;".to_string();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, true);
-        encode("filename", "caffè.txt", &mut w).unwrap();
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, true, true);
+            encode("filename", "caffè.txt", &mut w).unwrap();
+        }
 
         assert_eq!(
             s,
@@ -242,13 +258,15 @@ mod tests {
         let mut s = "Content-Disposition: attachment;".to_string();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, true);
-        encode(
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, true, true);
+            encode(
             "filename",
             "testing-to-see-what-happens-when-📕📕📕📕📕📕📕📕📕📕📕-are-placed-on-the-boundary.txt",
             &mut w,
         )
         .unwrap();
+        }
 
         assert_eq!(
             s,
@@ -268,13 +286,15 @@ mod tests {
         let mut s = "Content-Disposition: attachment;".to_string();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, true);
-        encode(
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, true, true);
+            encode(
             "filename",
             "testing-to-see-what-happens-when-books-are-placed-in-the-second-part-📕📕📕📕📕📕📕📕📕📕📕.txt",
             &mut w,
         )
         .unwrap();
+        }
 
         assert_eq!(
             s,
@@ -302,8 +322,10 @@ mod tests {
                 filename.push('Ü');
 
                 let mut output = base_header.clone();
-                let mut w = EmailWriter::new(&mut output, line_len, true);
-                encode("filename", &filename, &mut w).unwrap();
+                {
+                    let mut w = EmailWriter::new(&mut output, line_len, 0, false, true);
+                    encode("filename", &filename, &mut w).unwrap();
+                }
 
                 // look for all hex encoded chars
                 let output_len = output.len();

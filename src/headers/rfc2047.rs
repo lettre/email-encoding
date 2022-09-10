@@ -19,8 +19,10 @@ const ENCODING_END_SUFFIX: &str = "?=";
 /// let input = "Adrián";
 ///
 /// let mut output = String::new();
-/// let mut writer = EmailWriter::new(&mut output, 0, false);
-/// email_encoding::headers::rfc2047::encode(input, &mut writer)?;
+/// {
+///     let mut writer = EmailWriter::new(&mut output, 0, 0, false, false);
+///     email_encoding::headers::rfc2047::encode(input, &mut writer)?;
+/// }
 /// assert_eq!(output, "=?utf-8?b?QWRyacOhbg==?=");
 /// # Ok(())
 /// # }
@@ -69,8 +71,10 @@ mod tests {
         let mut s = String::new();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
-        encode("", &mut w).unwrap();
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            encode("", &mut w).unwrap();
+        }
 
         assert_eq!(s, "");
     }
@@ -80,8 +84,10 @@ mod tests {
         let mut s = String::new();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
-        encode("abcd", &mut w).unwrap();
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            encode("abcd", &mut w).unwrap();
+        }
 
         assert_eq!(s, "=?utf-8?b?YWJjZA==?=");
     }
@@ -91,8 +97,10 @@ mod tests {
         let mut s = String::new();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
-        encode("abcdef", &mut w).unwrap();
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            encode("abcdef", &mut w).unwrap();
+        }
 
         assert_eq!(s, "=?utf-8?b?YWJjZGVm?=");
     }
@@ -102,8 +110,10 @@ mod tests {
         let mut s = String::new();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
-        encode(&"lettre".repeat(20), &mut w).unwrap();
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            encode(&"lettre".repeat(20), &mut w).unwrap();
+        }
 
         assert_eq!(
             s,
@@ -120,8 +130,10 @@ mod tests {
         let mut s = String::new();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
-        encode(&"hétérogénéité".repeat(16), &mut w).unwrap();
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            encode(&"hétérogénéité".repeat(16), &mut w).unwrap();
+        }
 
         assert_eq!(
             s,

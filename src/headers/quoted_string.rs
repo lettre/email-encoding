@@ -15,8 +15,10 @@ use super::{rfc2047, utils, EmailWriter};
 ///     let input = "John";
 ///
 ///     let mut output = String::new();
-///     let mut writer = EmailWriter::new(&mut output, 0, false);
-///     email_encoding::headers::quoted_string::encode(input, &mut writer)?;
+///     {
+///         let mut writer = EmailWriter::new(&mut output, 0, 0, false, false);
+///         email_encoding::headers::quoted_string::encode(input, &mut writer)?;
+///     }
 ///     assert_eq!(output, "John");
 /// }
 ///
@@ -24,8 +26,10 @@ use super::{rfc2047, utils, EmailWriter};
 ///     let input = "John Smith";
 ///
 ///     let mut output = String::new();
-///     let mut writer = EmailWriter::new(&mut output, 0, false);
-///     email_encoding::headers::quoted_string::encode(input, &mut writer)?;
+///     {
+///         let mut writer = EmailWriter::new(&mut output, 0, 0, false, false);
+///         email_encoding::headers::quoted_string::encode(input, &mut writer)?;
+///     }
 ///     assert_eq!(output, "\"John Smith\"");
 /// }
 ///
@@ -33,8 +37,10 @@ use super::{rfc2047, utils, EmailWriter};
 ///     let input = "Rogue \" User";
 ///
 ///     let mut output = String::new();
-///     let mut writer = EmailWriter::new(&mut output, 0, false);
-///     email_encoding::headers::quoted_string::encode(input, &mut writer)?;
+///     {
+///         let mut writer = EmailWriter::new(&mut output, 0, 0, false, false);
+///         email_encoding::headers::quoted_string::encode(input, &mut writer)?;
+///     }
 ///     assert_eq!(output, "\"Rogue \\\" User\"");
 /// }
 ///
@@ -42,14 +48,17 @@ use super::{rfc2047, utils, EmailWriter};
 ///     let input = "Adrián";
 ///
 ///     let mut output = String::new();
-///     let mut writer = EmailWriter::new(&mut output, 0, false);
-///     email_encoding::headers::quoted_string::encode(input, &mut writer)?;
+///     {
+///         let mut writer = EmailWriter::new(&mut output, 0, 0, false, false);
+///         email_encoding::headers::quoted_string::encode(input, &mut writer)?;
+///     }
 ///     assert_eq!(output, "=?utf-8?b?QWRyacOhbg==?=");
 /// }
 /// # Ok(())
 /// # }
 /// ```
 pub fn encode(value: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
+    #[derive(Debug)]
     enum Strategy {
         Plain,
         Quoted,
@@ -132,8 +141,10 @@ mod tests {
         let mut s = String::new();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
-        encode("1234567890abcd", &mut w).unwrap();
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            encode("1234567890abcd", &mut w).unwrap();
+        }
 
         assert_eq!(s, "1234567890abcd");
     }
@@ -143,8 +154,10 @@ mod tests {
         let mut s = String::new();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
-        encode("1234567890 abcd", &mut w).unwrap();
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            encode("1234567890 abcd", &mut w).unwrap();
+        }
 
         assert_eq!(s, "\"1234567890 abcd\"");
     }
@@ -154,8 +167,10 @@ mod tests {
         let mut s = String::new();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
-        encode("1234567890 abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd", &mut w).unwrap();
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            encode("1234567890 abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd", &mut w).unwrap();
+        }
 
         assert_eq!(s, concat!(
             "\"1234567890\r\n",
@@ -168,8 +183,10 @@ mod tests {
         let mut s = String::new();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
-        encode("12345\\67890 ab\"cd", &mut w).unwrap();
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            encode("12345\\67890 ab\"cd", &mut w).unwrap();
+        }
 
         assert_eq!(s, "\"12345\\\\67890 ab\\\"cd\"");
     }
@@ -180,8 +197,10 @@ mod tests {
     //     let mut s = String::new();
     //     let line_len = s.len();
     //
-    //     let mut w = EmailWriter::new(&mut s, line_len, false);
-    //     encode("12345\\67890 ab\"cdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd", &mut w).unwrap();
+    //     {
+    //         let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+    //         encode("12345\\67890 ab\"cdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd", &mut w).unwrap();
+    //     }
     //
     //     assert_eq!(s, concat!(
     //         "\"12345\\\\67890\r\n",
@@ -194,8 +213,10 @@ mod tests {
         let mut s = String::new();
         let line_len = s.len();
 
-        let mut w = EmailWriter::new(&mut s, line_len, false);
-        encode("12345\\67890 perché ab\"cd", &mut w).unwrap();
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            encode("12345\\67890 perché ab\"cd", &mut w).unwrap();
+        }
 
         assert_eq!(s, "=?utf-8?b?MTIzNDVcNjc4OTAgcGVyY2jDqSBhYiJjZA==?=");
     }
