@@ -15,7 +15,7 @@ pub struct EmailWriter<'a> {
     writer: &'a mut dyn Write,
     line_len: usize,
     spaces: usize,
-    write_decorative_space_on_next_line: bool,
+    optional_breakpoint: bool,
     can_go_to_new_line_now: bool,
 }
 
@@ -31,14 +31,14 @@ impl<'a> EmailWriter<'a> {
         writer: &'a mut dyn Write,
         line_len: usize,
         spaces: usize,
-        write_decorative_space_on_next_line: bool,
+        optional_breakpoint: bool,
         can_go_to_new_line_now: bool,
     ) -> Self {
         Self {
             writer,
             line_len,
             spaces,
-            write_decorative_space_on_next_line,
+            optional_breakpoint,
             can_go_to_new_line_now,
         }
     }
@@ -47,7 +47,7 @@ impl<'a> EmailWriter<'a> {
     pub fn new_line(&mut self) -> fmt::Result {
         self.writer.write_str("\r\n")?;
         self.line_len = 0;
-        self.write_decorative_space_on_next_line = false;
+        self.optional_breakpoint = false;
         self.can_go_to_new_line_now = false;
 
         Ok(())
@@ -57,7 +57,7 @@ impl<'a> EmailWriter<'a> {
     pub(crate) fn new_line_and_space(&mut self) -> fmt::Result {
         self.writer.write_str("\r\n ")?;
         self.line_len = 1;
-        self.write_decorative_space_on_next_line = false;
+        self.optional_breakpoint = false;
         self.can_go_to_new_line_now = false;
 
         Ok(())
@@ -80,8 +80,8 @@ impl<'a> EmailWriter<'a> {
     /// This method shouldn't be called multiple times consecutively,
     /// and will panic if debug assertions are on.
     pub fn decorative_space(&mut self) {
-        debug_assert!(!self.write_decorative_space_on_next_line);
-        self.write_decorative_space_on_next_line = true;
+        debug_assert!(!self.optional_breakpoint);
+        self.optional_breakpoint = true;
     }
 
     /// Get the length in bytes of the last line written to the inner writer.
@@ -92,7 +92,7 @@ impl<'a> EmailWriter<'a> {
     /// Get the length in bytes of the last line written to the inner writer
     /// plus the spaces which might be written to in on the next write call.
     pub fn projected_line_len(&self) -> usize {
-        self.line_len + self.spaces + usize::from(self.write_decorative_space_on_next_line)
+        self.line_len + self.spaces + usize::from(self.optional_breakpoint)
     }
 
     /// Get a [`Write`]r which automatically line folds text written to it.
@@ -115,7 +115,7 @@ impl<'a> EmailWriter<'a> {
 
 impl<'a> Write for EmailWriter<'a> {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        self.spaces += usize::from(mem::take(&mut self.write_decorative_space_on_next_line));
+        self.spaces += usize::from(mem::take(&mut self.optional_breakpoint));
         self.write_spaces()?;
 
         let s_after = s.trim_end_matches(' ');
@@ -134,7 +134,7 @@ impl<'a> Write for EmailWriter<'a> {
         if c == ' ' {
             self.spaces += 1;
         } else {
-            self.spaces += usize::from(mem::take(&mut self.write_decorative_space_on_next_line));
+            self.spaces += usize::from(mem::take(&mut self.optional_breakpoint));
             self.write_spaces()?;
             self.can_go_to_new_line_now = true;
 
@@ -174,7 +174,7 @@ impl<'a, 'b> Write for FoldingEmailWriter<'a, 'b> {
             match (
                 self.writer.can_go_to_new_line_now,
                 self.writer.spaces,
-                self.writer.write_decorative_space_on_next_line,
+                self.writer.optional_breakpoint,
                 (self.writer.projected_line_len() + start.len()) > MAX_LINE_LEN,
             ) {
                 (true, 1.., false, true) => {
