@@ -47,7 +47,7 @@ pub fn encode(mut s: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
 
         // Encode `word`
         let encoder =
-            base64::display::Base64Display::with_config(word.as_bytes(), base64::STANDARD);
+            base64::display::Base64Display::from(word.as_bytes(), &base64::engine::DEFAULT_ENGINE);
         write!(w, "{}", encoder)?;
 
         // Write the suffix

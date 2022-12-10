@@ -42,7 +42,7 @@ pub fn encode(b: &[u8], w: &mut dyn Write) -> fmt::Result {
 
     let mut chunks = b.chunks(LINE_LEN / 4 * 3).peekable();
     while let Some(chunk) = chunks.next() {
-        let len = ::base64::encode_config_slice(chunk, ::base64::STANDARD, &mut buf);
+        let len = ::base64::encode_engine_slice(chunk, &mut buf, &::base64::engine::DEFAULT_ENGINE);
 
         w.write_str(str::from_utf8(&buf[..len]).expect("base64 produced an invalid encode"))?;
         if chunks.peek().is_some() {
