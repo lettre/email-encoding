@@ -3,6 +3,8 @@
 use std::fmt::{self, Write};
 use std::str;
 
+use ::base64::Engine;
+
 const LINE_LEN: usize = 76;
 const CRLF: &str = "\r\n";
 
@@ -42,7 +44,9 @@ pub fn encode(b: &[u8], w: &mut dyn Write) -> fmt::Result {
 
     let mut chunks = b.chunks(LINE_LEN / 4 * 3).peekable();
     while let Some(chunk) = chunks.next() {
-        let len = ::base64::encode_engine_slice(chunk, &mut buf, &::base64::engine::DEFAULT_ENGINE);
+        let len = ::base64::engine::general_purpose::STANDARD
+            .encode_slice(chunk, &mut buf)
+            .unwrap();
 
         w.write_str(str::from_utf8(&buf[..len]).expect("base64 produced an invalid encode"))?;
         if chunks.peek().is_some() {
