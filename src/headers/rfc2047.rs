@@ -38,7 +38,7 @@ pub fn encode(mut s: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
 
         if word.is_empty() {
             // No space remaining on this line, go to a new one
-            w.new_line_and_space()?;
+            w.wrap_line()?;
             continue;
         }
 

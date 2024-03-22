@@ -63,6 +63,12 @@ impl<'a> EmailWriter<'a> {
         Ok(())
     }
 
+    /// Equivalent to resetting the number of spaces and calling `new_line_and_space()`.
+    pub fn wrap_line(&mut self) -> fmt::Result {
+        self.spaces = 0;
+        self.new_line_and_space()
+    }
+
     #[cfg(not(tarpaulin_include))]
     #[doc(hidden)]
     #[deprecated(note = "Renamed to `new_line`", since = "0.1.2")]
