@@ -182,7 +182,8 @@ impl<'a, 'b> Write for FoldingEmailWriter<'a, 'b> {
                     self.writer.new_line()?;
                 }
                 (true, _, true, true) => {
-                    self.writer.new_line_and_space()?;
+                    self.writer.new_line()?;
+                    self.writer.space();
                 }
                 _ => {}
             }
