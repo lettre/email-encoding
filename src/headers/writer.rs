@@ -365,4 +365,24 @@ mod tests {
             )
         );
     }
+
+    #[test]
+    fn double_spaces_issue_949_no_space() {
+        let mut s = "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ".to_string();
+        let line_len = s.len();
+
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false, true);
+            w.folding().write_str("BBBBBBBBBBBBBBB").unwrap();
+            crate::headers::rfc2047::encode("sélection", &mut w).unwrap();
+        }
+
+        assert_eq!(
+            s,
+            concat!(
+                "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA BBBBBBBBBBBBBBB=?utf-8?b?cw==?=\r\n",
+                " =?utf-8?b?w6lsZWN0aW9u?=",
+            )
+        );
+    }
 }
