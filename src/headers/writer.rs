@@ -53,17 +53,6 @@ impl<'a> EmailWriter<'a> {
         Ok(())
     }
 
-    /// Equivalent to calling `new_line()` and `space()` consecutively.
-    pub(crate) fn new_line_and_space(&mut self) -> fmt::Result {
-        self.spaces = 0;
-        self.writer.write_str("\r\n ")?;
-        self.line_len = 1;
-        self.optional_breakpoint = false;
-        self.can_go_to_new_line_now = false;
-
-        Ok(())
-    }
-
     #[cfg(not(tarpaulin_include))]
     #[doc(hidden)]
     #[deprecated(note = "Renamed to `new_line`", since = "0.1.2")]
@@ -74,6 +63,10 @@ impl<'a> EmailWriter<'a> {
     /// Write a space which _might_ get wrapped to a new line on the next write.
     pub fn space(&mut self) {
         self.spaces += 1;
+    }
+
+    pub(super) fn has_spaces(&self) -> bool {
+        self.spaces > 0
     }
 
     /// Write a space which won't be printed if the line wraps.
@@ -367,8 +360,8 @@ mod tests {
         assert_eq!(
             s,
             concat!(
-                "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA BBBBBBBBBBBBB\r\n",
-                " =?utf-8?b?c8OpbGVjdGlvbg==?=",
+                "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA BBBBBBBBBBBBB =?utf-8?b?cw==?=\r\n",
+                " =?utf-8?b?w6lsZWN0aW9u?=",
             )
         );
     }

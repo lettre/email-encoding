@@ -28,18 +28,27 @@ const ENCODING_END_SUFFIX: &str = "?=";
 /// # }
 /// ```
 pub fn encode(mut s: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
+    let mut wrote = false;
+
     while !s.is_empty() {
         let remaining_line_len = MAX_LINE_LEN.saturating_sub(
             ENCODING_START_PREFIX.len() + ENCODING_END_SUFFIX.len() + w.line_len() + "\r\n".len(),
         );
         let unencoded_remaining_line_len = remaining_line_len / 4 * 3;
 
-        let word = utils::truncate_to_char_boundary(s, unencoded_remaining_line_len.min(s.len()));
-
+        let mut word =
+            utils::truncate_to_char_boundary(s, unencoded_remaining_line_len.min(s.len()));
         if word.is_empty() {
-            // No space remaining on this line, go to a new one
-            w.new_line_and_space()?;
-            continue;
+            if wrote {
+                // No space remaining on this line, go to a new one
+                w.new_line()?;
+                w.space();
+                continue;
+            }
+
+            // No space remaining, but going to a new line will require us
+            // to introduce a new space, which will mess up things even more.
+            word = &s[..s.chars().next().unwrap().len_utf8()];
         }
 
         // Write the prefix
@@ -55,8 +64,8 @@ pub fn encode(mut s: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
         // Write the suffix
         w.write_str(ENCODING_END_SUFFIX)?;
 
-        // Advance `s`
         s = &s[word.len()..];
+        wrote = true;
     }
 
     Ok(())
