@@ -351,4 +351,24 @@ mod tests {
             )
         );
     }
+
+    #[test]
+    fn double_spaces_issue_949() {
+        let mut s = "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ".to_string();
+        let line_len = s.len();
+
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false, true);
+            w.folding().write_str("BBBBBBBBBBBBB ").unwrap();
+            crate::headers::rfc2047::encode("sélection", &mut w).unwrap();
+        }
+
+        assert_eq!(
+            s,
+            concat!(
+                "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA BBBBBBBBBBBBB\r\n",
+                " =?utf-8?b?c8OpbGVjdGlvbg==?=",
+            )
+        );
+    }
 }
