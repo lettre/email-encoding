@@ -55,6 +55,7 @@ impl<'a> EmailWriter<'a> {
 
     /// Equivalent to calling `new_line()` and `space()` consecutively.
     pub(crate) fn new_line_and_space(&mut self) -> fmt::Result {
+        self.spaces = 0;
         self.writer.write_str("\r\n ")?;
         self.line_len = 1;
         self.optional_breakpoint = false;
