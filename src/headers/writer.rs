@@ -65,10 +65,6 @@ impl<'a> EmailWriter<'a> {
         self.spaces += 1;
     }
 
-    pub(super) fn has_spaces(&self) -> bool {
-        self.spaces > 0
-    }
-
     /// Write a space which won't be printed if the line wraps.
     ///
     /// This method shouldn't be called multiple times consecutively,
