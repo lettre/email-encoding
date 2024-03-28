@@ -20,7 +20,7 @@ const ENCODING_END_SUFFIX: &str = "?=";
 ///
 /// let mut output = String::new();
 /// {
-///     let mut writer = EmailWriter::new(&mut output, 0, 0, false, false);
+///     let mut writer = EmailWriter::new(&mut output, 0, 0, false);
 ///     email_encoding::headers::rfc2047::encode(input, &mut writer)?;
 /// }
 /// assert_eq!(output, "=?utf-8?b?QWRyacOhbg==?=");
@@ -83,7 +83,7 @@ mod tests {
         let line_len = s.len();
 
         {
-            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false);
             encode("", &mut w).unwrap();
         }
 
@@ -96,7 +96,7 @@ mod tests {
         let line_len = s.len();
 
         {
-            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false);
             encode("abcd", &mut w).unwrap();
         }
 
@@ -109,7 +109,7 @@ mod tests {
         let line_len = s.len();
 
         {
-            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false);
             encode("abcdef", &mut w).unwrap();
         }
 
@@ -122,7 +122,7 @@ mod tests {
         let line_len = s.len();
 
         {
-            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false);
             encode(&"lettre".repeat(20), &mut w).unwrap();
         }
 
@@ -142,7 +142,7 @@ mod tests {
         let line_len = s.len();
 
         {
-            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false);
             encode(&"hétérogénéité".repeat(16), &mut w).unwrap();
         }
 

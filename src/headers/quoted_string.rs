@@ -16,7 +16,7 @@ use super::{rfc2047, utils, EmailWriter};
 ///
 ///     let mut output = String::new();
 ///     {
-///         let mut writer = EmailWriter::new(&mut output, 0, 0, false, false);
+///         let mut writer = EmailWriter::new(&mut output, 0, 0, false);
 ///         email_encoding::headers::quoted_string::encode(input, &mut writer)?;
 ///     }
 ///     assert_eq!(output, "John");
@@ -27,7 +27,7 @@ use super::{rfc2047, utils, EmailWriter};
 ///
 ///     let mut output = String::new();
 ///     {
-///         let mut writer = EmailWriter::new(&mut output, 0, 0, false, false);
+///         let mut writer = EmailWriter::new(&mut output, 0, 0, false);
 ///         email_encoding::headers::quoted_string::encode(input, &mut writer)?;
 ///     }
 ///     assert_eq!(output, "\"John Smith\"");
@@ -38,7 +38,7 @@ use super::{rfc2047, utils, EmailWriter};
 ///
 ///     let mut output = String::new();
 ///     {
-///         let mut writer = EmailWriter::new(&mut output, 0, 0, false, false);
+///         let mut writer = EmailWriter::new(&mut output, 0, 0, false);
 ///         email_encoding::headers::quoted_string::encode(input, &mut writer)?;
 ///     }
 ///     assert_eq!(output, "\"Rogue \\\" User\"");
@@ -49,7 +49,7 @@ use super::{rfc2047, utils, EmailWriter};
 ///
 ///     let mut output = String::new();
 ///     {
-///         let mut writer = EmailWriter::new(&mut output, 0, 0, false, false);
+///         let mut writer = EmailWriter::new(&mut output, 0, 0, false);
 ///         email_encoding::headers::quoted_string::encode(input, &mut writer)?;
 ///     }
 ///     assert_eq!(output, "=?utf-8?b?QWRyacOhbg==?=");
@@ -142,7 +142,7 @@ mod tests {
         let line_len = s.len();
 
         {
-            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false);
             encode("1234567890abcd", &mut w).unwrap();
         }
 
@@ -155,7 +155,7 @@ mod tests {
         let line_len = s.len();
 
         {
-            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false);
             encode("1234567890 abcd", &mut w).unwrap();
         }
 
@@ -168,7 +168,7 @@ mod tests {
         let line_len = s.len();
 
         {
-            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false);
             encode("1234567890 abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd", &mut w).unwrap();
         }
 
@@ -184,7 +184,7 @@ mod tests {
         let line_len = s.len();
 
         {
-            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false);
             encode("12345\\67890 ab\"cd", &mut w).unwrap();
         }
 
@@ -214,7 +214,7 @@ mod tests {
         let line_len = s.len();
 
         {
-            let mut w = EmailWriter::new(&mut s, line_len, 0, false, false);
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false);
             encode("12345\\67890 perché ab\"cd", &mut w).unwrap();
         }
 
