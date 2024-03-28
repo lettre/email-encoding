@@ -4,7 +4,7 @@
 
 use std::fmt::{self, Write};
 
-use super::{utils, EmailWriter, MAX_LINE_LEN};
+use super::{utils, writer::EmailWriter, MAX_LINE_LEN};
 
 const ENCODING_START_PREFIX: &str = "=?utf-8?b?";
 const ENCODING_END_SUFFIX: &str = "?=";

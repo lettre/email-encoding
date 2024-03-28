@@ -4,7 +4,7 @@
 
 use std::fmt::{self, Write};
 
-use super::{hex_encoding, utils, EmailWriter, MAX_LINE_LEN};
+use super::{hex_encoding, utils, writer::EmailWriter, MAX_LINE_LEN};
 
 /// Encode a string via RFC 2231.
 ///

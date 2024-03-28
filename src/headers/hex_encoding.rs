@@ -1,6 +1,6 @@
 use std::fmt::{self, Write};
 
-use super::{hex, utils, EmailWriter};
+use super::{hex, utils, writer::EmailWriter};
 
 pub(super) fn percent_encode_char(w: &mut EmailWriter<'_>, to_append: char) -> fmt::Result {
     encode_char(w, '%', to_append)

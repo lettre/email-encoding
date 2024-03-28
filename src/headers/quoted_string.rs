@@ -2,7 +2,7 @@
 
 use std::fmt::{self, Write};
 
-use super::{rfc2047, utils, EmailWriter};
+use super::{rfc2047, utils, writer::EmailWriter};
 
 /// Encode a string that may need to be quoted.
 ///

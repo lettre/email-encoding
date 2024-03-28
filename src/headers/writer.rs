@@ -48,13 +48,6 @@ impl<'a> EmailWriter<'a> {
         Ok(())
     }
 
-    #[cfg(not(tarpaulin_include))]
-    #[doc(hidden)]
-    #[deprecated(note = "Renamed to `new_line`", since = "0.1.2")]
-    pub fn new_line_no_initial_space(&mut self) -> fmt::Result {
-        self.new_line()
-    }
-
     /// Write a space which _might_ get wrapped to a new line on the next write.
     pub fn space(&mut self) {
         self.spaces += 1;
