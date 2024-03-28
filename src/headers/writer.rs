@@ -58,6 +58,10 @@ impl<'a> EmailWriter<'a> {
         self.spaces = 0;
     }
 
+    pub(super) fn has_spaces(&mut self) -> bool {
+        self.spaces >= 1
+    }
+
     /// Get the length in bytes of the last line written to the inner writer.
     pub fn line_len(&self) -> usize {
         self.line_len
@@ -329,8 +333,8 @@ mod tests {
         assert_eq!(
             s,
             concat!(
-                "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA BBBBBBBBBBBBB =?utf-8?b?cw==?=\r\n",
-                " =?utf-8?b?w6lsZWN0aW9u?=",
+                "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA BBBBBBBBBBBBB\r\n",
+                " =?utf-8?b?c8OpbGVjdGlvbg==?=",
             )
         );
     }

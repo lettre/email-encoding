@@ -39,10 +39,16 @@ pub fn encode(mut s: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
         let mut word =
             utils::truncate_to_char_boundary(s, unencoded_remaining_line_len.min(s.len()));
         if word.is_empty() {
-            if wrote {
+            if wrote || w.has_spaces() {
                 // No space remaining on this line, go to a new one
                 w.new_line()?;
-                w.space();
+                if !w.has_spaces() {
+                    // The last write before this call to `encode` most
+                    // likely wasn't rfc2047 so we must write a "soft"
+                    // space to let the decoder know we're still within the
+                    // same header
+                    w.space();
+                }
                 continue;
             }
 
