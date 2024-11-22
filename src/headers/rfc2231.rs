@@ -372,4 +372,12 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    #[should_panic(expected = "`key` must only be composed of ascii alphanumeric chars")]
+    fn non_ascii_key() {
+        let mut s = String::new();
+        let mut w = EmailWriter::new(&mut s, 0, 0, true);
+        let _ = encode("📬", "", &mut w);
+    }
 }
