@@ -105,14 +105,14 @@ pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter<'_>) -> fmt::Resul
 
                 w.write_char('"')?;
 
-                if !value.is_empty() {
-                    // End of line
-                    w.write_char(';')?;
-                    w.new_line()?;
-                } else {
+                if value.is_empty() {
                     // End of value
                     break;
                 }
+
+                // End of line
+                w.write_char(';')?;
+                w.new_line()?;
 
                 i += 1;
             }
@@ -144,14 +144,14 @@ pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter<'_>) -> fmt::Resul
                 }
             }
 
-            if !value.is_empty() {
-                // End of line
-                w.write_char(';')?;
-                w.new_line()?;
-            } else {
+            if value.is_empty() {
                 // End of value
                 break;
             }
+
+            // End of line
+            w.write_char(';')?;
+            w.new_line()?;
 
             i += 1;
         }
