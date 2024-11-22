@@ -226,7 +226,13 @@ mod tests {
 
     #[test]
     fn not_too_long_multiline() {
-        let input = concat!("0123\n", "4567").as_bytes();
+        let input = concat!(
+            "0123\n",
+            "4567\n",
+            "00000000000000000000000000000000000000000\n",
+            "89"
+        )
+        .as_bytes();
 
         assert!(!line_too_long(input));
     }

@@ -70,7 +70,7 @@ pub fn encode(b: &[u8], w: &mut dyn Write) -> fmt::Result {
 pub fn encoded_len(input_len: usize) -> usize {
     let mut base64_len = input_len / 3 * 4;
     if input_len % 3 != 0 {
-        base64_len += 4 - base64_len % 4;
+        base64_len += 4;
     }
     let mut crlf_len = base64_len / LINE_LEN * CRLF.len();
     if crlf_len >= CRLF.len() && base64_len % LINE_LEN == 0 {
