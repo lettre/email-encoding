@@ -54,7 +54,7 @@ pub fn encode(mut s: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
 
             // No space remaining, but going to a new line will require us
             // to introduce a new space, which will mess up things even more.
-            word = &s[..s.chars().next().unwrap().len_utf8()];
+            word = &s[..s.chars().next().expect("`s` is empty").len_utf8()];
         }
 
         // Write the prefix
