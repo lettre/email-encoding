@@ -1,6 +1,6 @@
 //! Email body encoding algorithms.
 
-use std::ops::Deref;
+use core::ops::Deref;
 
 pub mod base64;
 mod chooser;

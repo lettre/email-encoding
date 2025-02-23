@@ -1,4 +1,4 @@
-use std::fmt::{self, Write};
+use core::fmt::{self, Write};
 
 pub(super) fn str_is_ascii_alphanumeric(s: &str) -> bool {
     s.bytes().all(|c| c.is_ascii_alphanumeric())

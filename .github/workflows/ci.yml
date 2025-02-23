@@ -57,6 +57,9 @@ jobs:
       - name: Run tests
         run: cargo test
 
+      - name: Run no_std tests
+        run: cargo test --no-default-features
+
   coverage:
     name: coverage / stable
     runs-on: ubuntu-latest

@@ -1,15 +1,15 @@
 //! Utilities for writing email headers to a [`Write`]r.
 //!
-//! [`Write`]: std::fmt::Write
+//! [`Write`]: core::fmt::Write
 
-use std::fmt::{self, Write};
+use core::fmt::{self, Write};
 
 use super::MAX_LINE_LEN;
 
 /// Wrapper around [`Write`] that remembers the length of the
 /// last line written to it.
 ///
-/// [`Write`]: std::fmt::Write
+/// [`Write`]: core::fmt::Write
 pub struct EmailWriter<'a> {
     writer: &'a mut dyn Write,
     line_len: usize,
@@ -75,7 +75,7 @@ impl<'a> EmailWriter<'a> {
 
     /// Get a [`Write`]r which automatically line folds text written to it.
     ///
-    /// [`Write`]: std::fmt::Write
+    /// [`Write`]: core::fmt::Write
     pub fn folding<'b>(&'b mut self) -> FoldingEmailWriter<'a, 'b> {
         FoldingEmailWriter { writer: self }
     }
@@ -131,7 +131,7 @@ impl<'a> Drop for EmailWriter<'a> {
 /// Wrapper around [`Write`] that remembers the length of the
 /// last line and automatically line folds text written to it.
 ///
-/// [`Write`]: std::fmt::Write
+/// [`Write`]: core::fmt::Write
 pub struct FoldingEmailWriter<'a, 'b> {
     writer: &'b mut EmailWriter<'a>,
 }
@@ -174,6 +174,8 @@ impl<'a, 'b> Write for FoldingEmailWriter<'a, 'b> {
 
 #[cfg(test)]
 mod tests {
+    use alloc::{borrow::ToOwned, string::ToString};
+
     use pretty_assertions::assert_eq;
 
     use super::*;

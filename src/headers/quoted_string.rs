@@ -1,6 +1,6 @@
 //! Quoted String encoder.
 
-use std::fmt::{self, Write};
+use core::fmt::{self, Write};
 
 use super::{rfc2047, utils, writer::EmailWriter};
 
@@ -10,7 +10,7 @@ use super::{rfc2047, utils, writer::EmailWriter};
 ///
 /// ```rust
 /// # use email_encoding::headers::writer::EmailWriter;
-/// # fn main() -> std::fmt::Result {
+/// # fn main() -> core::fmt::Result {
 /// {
 ///     let input = "John";
 ///
@@ -132,6 +132,8 @@ pub fn encode(value: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
 
 #[cfg(test)]
 mod tests {
+    use alloc::string::String;
+
     use pretty_assertions::assert_eq;
 
     use super::*;

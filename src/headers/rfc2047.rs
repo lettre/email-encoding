@@ -2,7 +2,7 @@
 //!
 //! [RFC 2047]: https://datatracker.ietf.org/doc/html/rfc2047
 
-use std::fmt::{self, Write};
+use core::fmt::{self, Write};
 
 use super::{utils, writer::EmailWriter, MAX_LINE_LEN};
 
@@ -15,7 +15,7 @@ const ENCODING_END_SUFFIX: &str = "?=";
 ///
 /// ```rust
 /// # use email_encoding::headers::writer::EmailWriter;
-/// # fn main() -> std::fmt::Result {
+/// # fn main() -> core::fmt::Result {
 /// let input = "Adrián";
 ///
 /// let mut output = String::new();
@@ -79,6 +79,8 @@ pub fn encode(mut s: &str, w: &mut EmailWriter<'_>) -> fmt::Result {
 
 #[cfg(test)]
 mod tests {
+    use alloc::string::String;
+
     use pretty_assertions::assert_eq;
 
     use super::*;

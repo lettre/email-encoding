@@ -7,7 +7,7 @@
 [![CI](https://github.com/lettre/email-encoding/actions/workflows/ci.yml/badge.svg)](https://github.com/lettre/email-encoding/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/lettre/email-encoding/branch/main/graph/badge.svg)](https://codecov.io/gh/lettre/email-encoding)
 
-Low-level crate implementing various RFCs for encoding emails.
+Low-level `#[no_std]` crate implementing various RFCs for encoding emails.
 Used internally by [lettre].
 
 Implemented RFCs:

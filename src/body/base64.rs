@@ -1,7 +1,9 @@
 //! Base64 email body encoder.
 
-use std::fmt::{self, Write};
-use std::str;
+use core::{
+    fmt::{self, Write},
+    str,
+};
 
 use ::base64::Engine;
 
@@ -20,7 +22,7 @@ const CRLF: &str = "\r\n";
 /// # Examples
 ///
 /// ```rust
-/// # fn main() -> std::fmt::Result {
+/// # fn main() -> core::fmt::Result {
 /// let input = "Hello!
 /// You've got mail!
 /// This one is base64 encoded.
@@ -81,6 +83,8 @@ pub fn encoded_len(input_len: usize) -> usize {
 
 #[cfg(test)]
 mod tests {
+    use alloc::string::String;
+
     use pretty_assertions::assert_eq;
 
     use super::{encode, encoded_len};

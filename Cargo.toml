@@ -6,12 +6,16 @@ repository = "https://github.com/lettre/email-encoding"
 edition = "2021"
 rust-version = "1.63"
 license = "MIT OR Apache-2.0"
-categories = ["email", "encoding"]
+categories = ["email", "encoding", "no-std"]
 keywords = ["email", "rfc2047", "rfc2231"]
 
 [dependencies]
 base64 = { version = "0.22", default-features = false }
-memchr = "2.1"
+memchr = { version = "2.1", default-features = false }
 
 [dev-dependencies]
 pretty_assertions = "1"
+
+[features]
+default = ["std"]
+std = ["base64/std", "memchr/std"]

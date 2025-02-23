@@ -2,7 +2,7 @@
 //!
 //! [RFC 2231]: https://datatracker.ietf.org/doc/html/rfc2231
 
-use std::fmt::{self, Write};
+use core::fmt::{self, Write};
 
 use super::{hex_encoding, utils, writer::EmailWriter, MAX_LINE_LEN};
 
@@ -12,7 +12,7 @@ use super::{hex_encoding, utils, writer::EmailWriter, MAX_LINE_LEN};
 ///
 /// ```rust
 /// # use email_encoding::headers::writer::EmailWriter;
-/// # fn main() -> std::fmt::Result {
+/// # fn main() -> core::fmt::Result {
 /// {
 ///     let input = "invoice.pdf";
 ///
@@ -162,6 +162,8 @@ pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter<'_>) -> fmt::Resul
 
 #[cfg(test)]
 mod tests {
+    use alloc::string::{String, ToString};
+
     use pretty_assertions::assert_eq;
 
     use super::*;
