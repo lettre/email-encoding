@@ -8,7 +8,7 @@ enum InputKind {
     Binary,
 }
 
-impl<'a> StrOrBytes<'a> {
+impl StrOrBytes<'_> {
     fn kind(&self) -> InputKind {
         if self.is_ascii() {
             InputKind::Ascii

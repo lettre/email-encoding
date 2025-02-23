@@ -45,7 +45,7 @@ impl<'a, const N: usize> From<&'a [u8; N]> for StrOrBytes<'a> {
     }
 }
 
-impl<'a> Deref for StrOrBytes<'a> {
+impl Deref for StrOrBytes<'_> {
     type Target = [u8];
 
     fn deref(&self) -> &Self::Target {

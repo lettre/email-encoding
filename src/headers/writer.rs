@@ -91,7 +91,7 @@ impl<'a> EmailWriter<'a> {
     }
 }
 
-impl<'a> Write for EmailWriter<'a> {
+impl Write for EmailWriter<'_> {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         self.write_spaces()?;
 
@@ -122,7 +122,7 @@ impl<'a> Write for EmailWriter<'a> {
     }
 }
 
-impl<'a> Drop for EmailWriter<'a> {
+impl Drop for EmailWriter<'_> {
     fn drop(&mut self) {
         let _ = self.write_spaces();
     }
@@ -136,7 +136,7 @@ pub struct FoldingEmailWriter<'a, 'b> {
     writer: &'b mut EmailWriter<'a>,
 }
 
-impl<'a, 'b> Write for FoldingEmailWriter<'a, 'b> {
+impl Write for FoldingEmailWriter<'_, '_> {
     fn write_str(&mut self, mut s: &str) -> fmt::Result {
         while !s.is_empty() {
             if s.starts_with(' ') {
@@ -174,7 +174,7 @@ impl<'a, 'b> Write for FoldingEmailWriter<'a, 'b> {
 
 #[cfg(test)]
 mod tests {
-    use alloc::{borrow::ToOwned, string::ToString};
+    use alloc::borrow::ToOwned;
 
     use pretty_assertions::assert_eq;
 
@@ -323,7 +323,7 @@ mod tests {
 
     #[test]
     fn double_spaces_issue_949() {
-        let mut s = "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ".to_string();
+        let mut s = "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ".to_owned();
         let line_len = s.len();
 
         {
@@ -343,7 +343,7 @@ mod tests {
 
     #[test]
     fn double_spaces_issue_949_no_space() {
-        let mut s = "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ".to_string();
+        let mut s = "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ".to_owned();
         let line_len = s.len();
 
         {

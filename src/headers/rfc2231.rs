@@ -162,7 +162,7 @@ pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter<'_>) -> fmt::Resul
 
 #[cfg(test)]
 mod tests {
-    use alloc::string::{String, ToString};
+    use alloc::{borrow::ToOwned, string::String};
 
     use pretty_assertions::assert_eq;
 
@@ -170,7 +170,7 @@ mod tests {
 
     #[test]
     fn empty() {
-        let mut s = "Content-Disposition: attachment;".to_string();
+        let mut s = "Content-Disposition: attachment;".to_owned();
         let line_len = 1;
 
         {
@@ -184,7 +184,7 @@ mod tests {
 
     #[test]
     fn parameter() {
-        let mut s = "Content-Disposition: attachment;".to_string();
+        let mut s = "Content-Disposition: attachment;".to_owned();
         let line_len = 1;
 
         {
@@ -201,7 +201,7 @@ mod tests {
 
     #[test]
     fn parameter_to_escape() {
-        let mut s = "Content-Disposition: attachment;".to_string();
+        let mut s = "Content-Disposition: attachment;".to_owned();
         let line_len = 1;
 
         {
@@ -218,7 +218,7 @@ mod tests {
 
     #[test]
     fn parameter_long() {
-        let mut s = "Content-Disposition: attachment;".to_string();
+        let mut s = "Content-Disposition: attachment;".to_owned();
         let line_len = s.len();
 
         {
@@ -244,7 +244,7 @@ mod tests {
 
     #[test]
     fn parameter_special() {
-        let mut s = "Content-Disposition: attachment;".to_string();
+        let mut s = "Content-Disposition: attachment;".to_owned();
         let line_len = s.len();
 
         {
@@ -264,7 +264,7 @@ mod tests {
 
     #[test]
     fn parameter_special_long() {
-        let mut s = "Content-Disposition: attachment;".to_string();
+        let mut s = "Content-Disposition: attachment;".to_owned();
         let line_len = s.len();
 
         {
@@ -293,7 +293,7 @@ mod tests {
 
     #[test]
     fn parameter_special_long_part2() {
-        let mut s = "Content-Disposition: attachment;".to_string();
+        let mut s = "Content-Disposition: attachment;".to_owned();
         let line_len = s.len();
 
         {
@@ -322,11 +322,11 @@ mod tests {
 
     #[test]
     fn parameter_dont_split_on_hex_boundary() {
-        let base_header = "Content-Disposition: attachment;".to_string();
+        let base_header = "Content-Disposition: attachment;".to_owned();
         let line_len = base_header.len();
 
         for start_offset in &["", "x", "xx", "xxx"] {
-            let mut filename = start_offset.to_string();
+            let mut filename = (*start_offset).to_owned();
 
             for i in 1..256 {
                 // 'Ü' results in two hex chars %C3%9C
