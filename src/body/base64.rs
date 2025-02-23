@@ -69,7 +69,7 @@ pub fn encode(b: &[u8], w: &mut dyn Write) -> fmt::Result {
 /// assert_eq!(encoded_len(16), 24);
 /// assert_eq!(encoded_len(300), 410);
 /// ```
-pub fn encoded_len(input_len: usize) -> usize {
+pub const fn encoded_len(input_len: usize) -> usize {
     let mut base64_len = input_len / 3 * 4;
     if input_len % 3 != 0 {
         base64_len += 4;
