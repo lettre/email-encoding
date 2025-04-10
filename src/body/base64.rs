@@ -61,6 +61,10 @@ pub fn encode(b: &[u8], w: &mut dyn Write) -> fmt::Result {
 
 /// Predict how many bytes [`encode`] is going to write given a `input_len` input length.
 ///
+/// # Panics
+///
+/// Panics if any of the internal calculations overflow.
+///
 /// # Examples
 ///
 /// ```rust
@@ -70,15 +74,25 @@ pub fn encode(b: &[u8], w: &mut dyn Write) -> fmt::Result {
 /// assert_eq!(encoded_len(300), 410);
 /// ```
 pub const fn encoded_len(input_len: usize) -> usize {
-    let mut base64_len = input_len / 3 * 4;
+    // FIXME: use `Option::expect` with MSRV >= 1.83
+    macro_rules! checked {
+        ($val:expr) => {
+            match $val {
+                Some(val) => val,
+                None => panic!("overflow"),
+            }
+        };
+    }
+
+    let mut base64_len = checked!((input_len / 3).checked_mul(4));
     if input_len % 3 != 0 {
-        base64_len += 4;
+        base64_len = checked!(base64_len.checked_add(4));
     }
     let mut crlf_len = base64_len / LINE_LEN * CRLF.len();
     if crlf_len >= CRLF.len() && base64_len % LINE_LEN == 0 {
         crlf_len -= CRLF.len();
     }
-    base64_len + crlf_len
+    checked!(base64_len.checked_add(crlf_len))
 }
 
 #[cfg(test)]
@@ -175,5 +189,11 @@ mod tests {
             )
         );
         assert_eq!(output.len(), encoded_len(input.len()));
+    }
+
+    #[test]
+    #[should_panic(expected = "overflow")]
+    fn overflow() {
+        encoded_len(usize::MAX);
     }
 }
