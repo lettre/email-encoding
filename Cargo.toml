@@ -1,6 +1,6 @@
 [package]
 name = "email-encoding"
-version = "0.4.0"
+version = "0.4.1"
 description = "Low level email encoding RFCs implementations"
 repository = "https://github.com/lettre/email-encoding"
 edition = "2021"
