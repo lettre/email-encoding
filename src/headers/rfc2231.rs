@@ -179,7 +179,7 @@ mod tests {
             encode("filename", "", &mut w).unwrap();
         }
 
-        assert_eq!(s, concat!("Content-Disposition: attachment; filename=\"\""));
+        assert_eq!(s, "Content-Disposition: attachment; filename=\"\"");
     }
 
     #[test]
@@ -193,10 +193,7 @@ mod tests {
             encode("filename", "duck.txt", &mut w).unwrap();
         }
 
-        assert_eq!(
-            s,
-            concat!("Content-Disposition: attachment; filename=\"duck.txt\"")
-        );
+        assert_eq!(s, "Content-Disposition: attachment; filename=\"duck.txt\"");
     }
 
     #[test]
@@ -212,7 +209,7 @@ mod tests {
 
         assert_eq!(
             s,
-            concat!("Content-Disposition: attachment; filename=\"du\\\"ck\\\\.txt\"")
+            "Content-Disposition: attachment; filename=\"du\\\"ck\\\\.txt\""
         );
     }
 
