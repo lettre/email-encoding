@@ -174,10 +174,13 @@ mod tests {
             encode("1234567890 abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd", &mut w).unwrap();
         }
 
-        assert_eq!(s, concat!(
-            "\"1234567890\r\n",
-            " abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd\""
-        ));
+        assert_eq!(
+            s,
+            concat!(
+                "\"1234567890\r\n",
+                " abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd\""
+            )
+        );
     }
 
     #[test]

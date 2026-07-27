@@ -135,7 +135,7 @@ fn quoted_printable_efficient(b: &[u8]) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{line_too_long, Encoding};
+    use super::{Encoding, line_too_long};
 
     #[test]
     fn ascii_short_str() {

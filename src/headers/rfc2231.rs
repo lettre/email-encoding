@@ -4,7 +4,7 @@
 
 use core::fmt::{self, Write};
 
-use super::{hex_encoding, utils, writer::EmailWriter, MAX_LINE_LEN};
+use super::{MAX_LINE_LEN, hex_encoding, utils, writer::EmailWriter};
 
 /// Encode a string via RFC 2231.
 ///

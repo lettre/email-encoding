@@ -4,7 +4,7 @@
 
 use core::fmt::{self, Write};
 
-use super::{utils, writer::EmailWriter, MAX_LINE_LEN};
+use super::{MAX_LINE_LEN, utils, writer::EmailWriter};
 
 const ENCODING_START_PREFIX: &str = "=?utf-8?b?";
 const ENCODING_END_SUFFIX: &str = "?=";
