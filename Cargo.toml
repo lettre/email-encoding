@@ -10,7 +10,7 @@ categories = ["email", "encoding", "no-std"]
 keywords = ["email", "rfc2047", "rfc2231"]
 
 [dependencies]
-base64 = { version = "0.22", default-features = false }
+base64 = { version = "0.23", default-features = false }
 memchr = { version = "2.1", default-features = false }
 
 [dev-dependencies]
