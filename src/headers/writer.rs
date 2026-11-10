@@ -101,7 +101,11 @@ impl Write for EmailWriter<'_> {
         if !s_after.is_empty() {
             self.writer.write_str(s_after)?;
             self.line_len += s_after.len();
-            self.can_go_to_new_line_now = true;
+            // Going to a new line after nothing but white space
+            // would leave a line that is made of white space only
+            if !is_white_space(s_after) {
+                self.can_go_to_new_line_now = true;
+            }
         }
 
         Ok(())
@@ -112,7 +116,9 @@ impl Write for EmailWriter<'_> {
             self.spaces += 1;
         } else {
             self.write_spaces()?;
-            self.can_go_to_new_line_now = true;
+            if c != '\t' {
+                self.can_go_to_new_line_now = true;
+            }
 
             self.writer.write_char(c)?;
             self.line_len += c.len_utf8();
@@ -120,6 +126,11 @@ impl Write for EmailWriter<'_> {
 
         Ok(())
     }
+}
+
+/// Whether `s` is made of nothing but spaces and tabs
+fn is_white_space(s: &str) -> bool {
+    s.bytes().all(|b| matches!(b, b' ' | b'\t'))
 }
 
 impl Drop for EmailWriter<'_> {
@@ -150,6 +161,9 @@ impl Write for FoldingEmailWriter<'_, '_> {
             if self.writer.can_go_to_new_line_now
                 && self.writer.spaces >= 1
                 && (self.writer.projected_line_len() + start.len()) > MAX_LINE_LEN
+                // A new line must not start with nothing but white space,
+                // as it could then end without anything else on it
+                && !is_white_space(start)
             {
                 self.writer.new_line()?;
             }
@@ -317,6 +331,60 @@ mod tests {
             concat!(
                 "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n",
                 " BBBBBBBBBB CCCCCCCCCC",
+            )
+        );
+    }
+
+    #[test]
+    fn tab_between_spaces() {
+        let mut s = "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            .to_owned();
+        let line_len = s.len();
+
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, true);
+            w.folding()
+                .write_str(
+                    " \t BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+                )
+                .unwrap();
+            w.folding().write_str(" \t").unwrap();
+        }
+
+        // No line is made of white space only
+        assert_eq!(
+            s,
+            concat!(
+                "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \t\r\n",
+                " BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB \t",
+            )
+        );
+    }
+
+    #[test]
+    fn tab_after_new_line() {
+        let mut s = "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            .to_owned();
+        let line_len = s.len();
+
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, true);
+            w.new_line().unwrap();
+            w.space();
+            w.write_char('\t').unwrap();
+            w.folding()
+                .write_str(
+                    " BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+                )
+                .unwrap();
+        }
+
+        // The white space written after going to a new line isn't left alone on it
+        assert_eq!(
+            s,
+            concat!(
+                "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n",
+                " \t BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
             )
         );
     }
