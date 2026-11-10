@@ -68,7 +68,7 @@ pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter<'_>) -> fmt::Resul
     );
     assert!(
         key.len() + "*12*=utf-8'';".len() < MAX_LINE_LEN,
-        "`key` must not be too long to cause the encoder to overflow the max line length"
+        "`key` must not be longer than 62 characters"
     );
 
     if utils::str_is_ascii_printable(value) {
