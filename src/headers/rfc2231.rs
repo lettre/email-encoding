@@ -95,7 +95,11 @@ pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter<'_>) -> fmt::Resul
             loop {
                 write!(w, " {}*{}=\"", key, i)?;
 
-                let remaining_len = MAX_LINE_LEN - w.line_len() - "\"\r\n".len();
+                // At least one character: a long `key` may leave no room
+                // on the line, and the value would never be written
+                let remaining_len = MAX_LINE_LEN
+                    .saturating_sub(w.line_len() + "\"\r\n".len())
+                    .max(1);
 
                 let value_ =
                     utils::truncate_to_char_boundary(value, remaining_len.min(value.len()));
@@ -131,16 +135,15 @@ pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter<'_>) -> fmt::Resul
                 w.write_str("utf-8''")?;
             }
 
+            // At least one character per line: a long `key` may leave no
+            // room on it, and the value would never be written
             let mut chars = value.chars();
-            while w.line_len() < MAX_LINE_LEN - "=xx=xx=xx=xx;\r\n".len() {
-                match chars.next() {
-                    Some(c) => {
-                        hex_encoding::percent_encode_char(w, c)?;
-                        value = chars.as_str();
-                    }
-                    None => {
-                        break;
-                    }
+            while let Some(c) = chars.next() {
+                hex_encoding::percent_encode_char(w, c)?;
+                value = chars.as_str();
+
+                if w.line_len() >= MAX_LINE_LEN - "=xx=xx=xx=xx;\r\n".len() {
+                    break;
                 }
             }
 
@@ -162,7 +165,7 @@ pub fn encode(key: &str, mut value: &str, w: &mut EmailWriter<'_>) -> fmt::Resul
 
 #[cfg(test)]
 mod tests {
-    use alloc::{borrow::ToOwned, string::String};
+    use alloc::{borrow::ToOwned, format, string::String};
 
     use pretty_assertions::assert_eq;
 
@@ -370,6 +373,71 @@ mod tests {
                 assert_ne!(0, last_newline_pos);
             }
         }
+    }
+
+    // A `fmt::Write` which fails instead of growing forever
+    struct Bounded(String);
+
+    impl fmt::Write for Bounded {
+        fn write_str(&mut self, s: &str) -> fmt::Result {
+            if self.0.len() + s.len() > 4096 {
+                return Err(fmt::Error);
+            }
+
+            self.0.push_str(s);
+            Ok(())
+        }
+    }
+
+    #[test]
+    fn parameter_special_long_key() {
+        // The longest `key` leaves no room for the value on a line
+        let key = "k".repeat(62);
+        let mut s = Bounded("Content-Disposition: attachment;".to_owned());
+        let line_len = s.0.len();
+
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, true);
+            w.space();
+            encode(&key, "caffè", &mut w).unwrap();
+        }
+
+        assert_eq!(
+            s.0,
+            [
+                "Content-Disposition: attachment;\r\n".to_owned(),
+                format!(" {key}*0*=utf-8''c;\r\n"),
+                format!(" {key}*1*=a;\r\n"),
+                format!(" {key}*2*=f;\r\n"),
+                format!(" {key}*3*=f;\r\n"),
+                format!(" {key}*4*=%C3%A8"),
+            ]
+            .concat()
+        );
+    }
+
+    #[test]
+    fn parameter_long_key() {
+        let key = "k".repeat(62);
+        let mut s = Bounded("Content-Disposition: attachment;".to_owned());
+        let line_len = s.0.len();
+
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, true);
+            w.space();
+            encode(&key, "duck-duck.txt", &mut w).unwrap();
+        }
+
+        assert_eq!(
+            s.0,
+            [
+                "Content-Disposition: attachment;\r\n".to_owned(),
+                format!(" {key}*0=\"duck-d\";\r\n"),
+                format!(" {key}*1=\"uck.tx\";\r\n"),
+                format!(" {key}*2=\"t\""),
+            ]
+            .concat()
+        );
     }
 
     #[test]
