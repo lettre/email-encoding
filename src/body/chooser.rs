@@ -27,8 +27,8 @@ impl Encoding {
     /// Look into `input` and decide what encoding format could best
     /// be used to represent it.
     ///
-    /// If the SMTP server supports the `SMTPUTF8` extension
-    /// `supports_utf8` _may_ me set to `true`, otherwise `false`
+    /// If the SMTP server supports the `8BITMIME` extension
+    /// `supports_utf8` _may_ be set to `true`, otherwise `false`
     /// is the safest option.
     ///
     /// Possible return values based on `supports_utf8`
