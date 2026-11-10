@@ -15,12 +15,16 @@ pub struct EmailWriter<'a> {
     line_len: usize,
     spaces: usize,
     can_go_to_new_line_now: bool,
+    /// Whether the current line holds nothing but white space so far
+    line_is_white_space: bool,
 }
 
 impl<'a> EmailWriter<'a> {
     /// Construct a new `EmailWriter`.
     ///
-    /// * `line_len` is the length of the last line in `writer`.
+    /// * `line_len` is the length of the last line in `writer`. Unless
+    ///   it's `0` the line is taken to hold something other than white
+    ///   space, like the name of the header.
     /// * `spaces` the number of spaces that must be written before
     ///   the next write.
     /// * `can_go_to_new_line_now` is whether the current line can
@@ -36,6 +40,7 @@ impl<'a> EmailWriter<'a> {
             line_len,
             spaces,
             can_go_to_new_line_now,
+            line_is_white_space: line_len == 0,
         }
     }
 
@@ -44,6 +49,7 @@ impl<'a> EmailWriter<'a> {
         self.writer.write_str("\r\n")?;
         self.line_len = 0;
         self.can_go_to_new_line_now = false;
+        self.line_is_white_space = true;
 
         Ok(())
     }
@@ -80,6 +86,19 @@ impl<'a> EmailWriter<'a> {
         FoldingEmailWriter { writer: self }
     }
 
+    /// Take note of something other than spaces having been written
+    fn wrote(&mut self, white_space: bool) {
+        if !white_space {
+            self.line_is_white_space = false;
+        }
+
+        // Going to a new line after nothing but white space
+        // would leave a line that is made of white space only
+        if !self.line_is_white_space {
+            self.can_go_to_new_line_now = true;
+        }
+    }
+
     fn write_spaces(&mut self) -> fmt::Result {
         while self.spaces > 0 {
             self.writer.write_char(' ')?;
@@ -101,11 +120,7 @@ impl Write for EmailWriter<'_> {
         if !s_after.is_empty() {
             self.writer.write_str(s_after)?;
             self.line_len += s_after.len();
-            // Going to a new line after nothing but white space
-            // would leave a line that is made of white space only
-            if !is_white_space(s_after) {
-                self.can_go_to_new_line_now = true;
-            }
+            self.wrote(is_white_space(s_after));
         }
 
         Ok(())
@@ -116,9 +131,7 @@ impl Write for EmailWriter<'_> {
             self.spaces += 1;
         } else {
             self.write_spaces()?;
-            if c != '\t' {
-                self.can_go_to_new_line_now = true;
-            }
+            self.wrote(c == '\t');
 
             self.writer.write_char(c)?;
             self.line_len += c.len_utf8();
@@ -385,6 +398,30 @@ mod tests {
             concat!(
                 "Subject: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n",
                 " \t BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+            )
+        );
+    }
+
+    #[test]
+    fn tab_after_header_name() {
+        let mut s = "Subject: ".to_owned();
+        let line_len = s.len();
+
+        {
+            let mut w = EmailWriter::new(&mut s, line_len, 0, false);
+            w.folding()
+                .write_str(
+                    "\t BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+                )
+                .unwrap();
+        }
+
+        // The line of the header name isn't made of white space only
+        assert_eq!(
+            s,
+            concat!(
+                "Subject: \t\r\n",
+                " BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
             )
         );
     }
