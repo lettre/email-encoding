@@ -40,6 +40,12 @@ impl Encoding {
     /// | `quoted-printable` | ✅      | ✅     |
     /// | `base64`           | ✅      | ✅     |
     ///
+    /// `7bit` and `8bit` are only chosen for an `input` that can be sent
+    /// as it is: one with short enough lines, no NUL, and no CR or LF
+    /// other than as part of a CRLF. The LF line endings of a `str` are
+    /// the exception: they are expected to be converted to CRLF before
+    /// it is sent.
+    ///
     /// # Examples
     ///
     /// ```rust
@@ -78,23 +84,23 @@ impl Encoding {
     }
 
     fn choose_impl(input: StrOrBytes<'_>, supports_utf8: bool) -> Self {
-        let line_too_long = line_too_long(&input);
+        let must_encode = line_too_long(&input) || has_nul_or_bare_line_ending(&input);
 
-        match (input.kind(), line_too_long, supports_utf8) {
+        match (input.kind(), must_encode, supports_utf8) {
             (InputKind::Ascii, false, _) => {
-                // Input is ascii and fits the maximum line length
+                // Input is ascii and can be sent as it is
                 Self::SevenBit
             }
             (InputKind::Ascii, true, _) => {
-                // Input is ascii but doesn't fix the maximum line length
+                // Input is ascii but can't be sent as it is
                 quoted_printable_or_base64(&input)
             }
             (InputKind::Utf8, false, true) => {
-                // Input is utf-8, line fits, the server supports it
+                // Input is utf-8, can be sent as it is, the server supports it
                 Self::EightBit
             }
             (InputKind::Utf8, true, true) => {
-                // Input is utf-8, line doesn't fit, the server supports it
+                // Input is utf-8, can't be sent as it is, the server supports it
                 quoted_printable_or_base64(&input)
             }
             (InputKind::Utf8, _, false) => {
@@ -115,6 +121,22 @@ fn line_too_long(b: &[u8]) -> bool {
         let last_ = mem::replace(&mut last, i);
         (i - last_) >= 76
     }) || (b.len() - last) >= 76
+}
+
+/// Whether `input` has a NUL, or a CR or LF that isn't part of a CRLF
+///
+/// Neither `7bit` nor `8bit` can represent them: see section 2.7 and 2.8
+/// of RFC 2045. A LF on its own is let through in a `str`, as its line
+/// endings are expected to be converted to CRLF.
+fn has_nul_or_bare_line_ending(input: &StrOrBytes<'_>) -> bool {
+    let lf_is_line_ending = matches!(input, StrOrBytes::Str(_));
+    let b: &[u8] = input;
+
+    memchr::memchr3_iter(b'\0', b'\r', b'\n', b).any(|i| match b[i] {
+        b'\r' => b.get(i + 1) != Some(&b'\n'),
+        b'\n' => !lf_is_line_ending && (i == 0 || b[i - 1] != b'\r'),
+        _ => true,
+    })
 }
 
 fn quoted_printable_or_base64(b: &[u8]) -> Encoding {
@@ -215,6 +237,75 @@ mod tests {
         let input = &[255, 234, b'A', b'C', 210];
 
         assert_eq!(Encoding::choose(input, false), Encoding::Base64);
+    }
+
+    #[test]
+    fn nul() {
+        assert_eq!(
+            Encoding::choose("abcd\0efgh", false),
+            Encoding::QuotedPrintable
+        );
+        assert_eq!(
+            Encoding::choose(b"abcd\0efgh", false),
+            Encoding::QuotedPrintable
+        );
+        assert_eq!(
+            Encoding::choose("abcd 📬\0efgh ij", true),
+            Encoding::QuotedPrintable
+        );
+        assert_eq!(Encoding::choose("\0\0\0\0", false), Encoding::Base64);
+    }
+
+    #[test]
+    fn bare_cr() {
+        for input in ["0123\r4567", "0123\r", "\r0123", "0123\n\r4567"] {
+            assert_eq!(
+                Encoding::choose(input, false),
+                Encoding::QuotedPrintable,
+                "{input:?}"
+            );
+            assert_eq!(
+                Encoding::choose(input.as_bytes(), false),
+                Encoding::QuotedPrintable,
+                "{input:?}"
+            );
+        }
+
+        assert_eq!(
+            Encoding::choose("0123 📬\r4567 89", true),
+            Encoding::QuotedPrintable
+        );
+    }
+
+    #[test]
+    fn bare_lf() {
+        for input in ["0123\n4567", "0123\n", "\n0123", "0123\r\n\n4567"] {
+            // Line endings of a `str` are expected to be converted
+            assert_eq!(Encoding::choose(input, false), Encoding::SevenBit);
+            assert_eq!(
+                Encoding::choose(input.as_bytes(), false),
+                Encoding::QuotedPrintable,
+                "{input:?}"
+            );
+        }
+
+        assert_eq!(Encoding::choose("0123 📬\n4567", true), Encoding::EightBit);
+    }
+
+    #[test]
+    fn crlf() {
+        for input in ["0123\r\n4567", "0123\r\n", "\r\n0123", "\r\n\r\n"] {
+            assert_eq!(Encoding::choose(input, false), Encoding::SevenBit);
+            assert_eq!(
+                Encoding::choose(input.as_bytes(), false),
+                Encoding::SevenBit
+            );
+        }
+
+        assert_eq!(
+            Encoding::choose("0123 📬\r\n4567", true),
+            Encoding::EightBit
+        );
     }
 
     #[test]
